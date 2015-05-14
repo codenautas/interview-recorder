@@ -21,10 +21,10 @@ Grabador de entrevistas
 [!--lang:en-->
 
 # Features
- * voice record, pause/resume, stop 
- * check list of topics/questions
- * tag the record with each check
- * download the audio and tag file
+ * voice recorder; pause/resume, stop 
+ * contains checklist of topics/questions
+ * saves the record with each check in a file
+ * downloads the audio and file
 
 <!--lang:es--]
 
@@ -51,12 +51,12 @@ Las características, definiciones funcionales y decisiones de diseño en genera
 
 # Use cases
 
-All of de use cases are based on this example: 
+All of the use cases are based on this example: 
 ***We are doing admission interview to a Phonegap course***
 
-We assume that the interviewer is familiarized with de check list. 
+We assume that the interviewer is familiar with the checklist. 
 
-The check list fits in one window in an iPad (or a phone with little font). 
+The checklist fits in one window in an iPad (or a phone with small font size). 
 
 <!--lang:es--]
 
@@ -71,15 +71,36 @@ El check list cabe en una pantalla de iPad o en un celular con letra muy pequeñ
 [!--lang:en-->
 
 ## Case 1: Interview in progress
-1. The interviewer press `Start`,
-2. He reads the first item in the check list: *Introduce yourself and tell why you want to take this course*.
-3. He press de check box of that item.
-4. He hears the story of the interviewee. 
-It the interviewee says something about any of the items in the check list 
-the interviewer press the appropiate check box. 
-5. When the interviewee stops the speech the interviewer reads the first unchecked item in the check list.
+1. The interviewer presses `Start`,
+2. He reads the first item in the checklist: *Introduce yourself and say why you want to take this course*.
+3. He presses de check box of that item.
+4. He listens the answer of the interviewee. 
+If the interviewee says something about any of the items in the checklist, 
+the interviewer presses the appropriate check box. 
+5. When the interviewee stops the speech, the interviewer reads the first unchecked item in the check list.
 6. This is repeated until there is no unchecked items
-or until the interviewer considers that must be terminated the interview.
+or until the interviewer considers that the interview must be terminated.
+
+### *checklist example*:
+- [x] 1. Introduce yourself and tell me why you want to take this course.
+- [ ] 2. Name
+- [ ] 3. Age
+- [ ] 4. Prior knowledge, or taken courses
+- [ ] 5. Mobile development experience 
+- [ ] 6. General development experience
+
+### Extras
+7. There could be string fields to be filled in during the interview 
+8. If an item of the checklist is pressed more than once, the program records every time the item was pressed (and shows a check for each time the button was pressed, so as to have a feedback of each press).
+
+## Case 2: Preparing the interview
+1. The preparer of the interview (could be the interviewer him/herself or a supervisor) enters every item (specifying the item number, text and type) in the PC or  mobile device
+2. He or she saves the *checklist* with a name on the server
+
+## Case 3: Downloading the interview
+1. The interviewer connects the device to the network and logs in the server
+2. He or she presses the `Transmit` button
+3. The program sends the interviews to the server
 
 <!--lang:es--]
 
@@ -101,6 +122,7 @@ o hasta que el entrevistador considere que ha de darse por terminada la entrevis
 - [ ] 4. Conocimientos previos, o estudios cursados
 - [ ] 5. Experiencia en desarrollo móvil
 - [ ] 6. Experiencia en desarrollo en general
+
 
 ### Adicionales
 7. Puede haber algunos campos de texto que se puedan llenar durante la entrevista
