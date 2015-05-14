@@ -1,8 +1,18 @@
+<!-- multilang from README.md
+
+
+
+
+NO MODIFIQUE ESTE ARCHIVO. FUE GENERADO AUTOMÁTICAMENTE POR multilang.js
+
+
+
+
+-->
 # interview-recorder
 
 Interview recorder - guided interview, simultaneous labeling
 
-<!--multilang v0 en:README.md es:LEEME.md-->
 
 ![training](https://img.shields.io/badge/intended-training-blue.svg)
 ![stability](https://img.shields.io/badge/stability-designing-red.svg)
@@ -10,23 +20,13 @@ Interview recorder - guided interview, simultaneous labeling
 
 <!--multilang buttons-->
 
-language: ![English](https://raw.githubusercontent.com/codenautas/multilang/master/img/lang-en.png)
-also available in:
-[![Spanish](https://raw.githubusercontent.com/codenautas/multilang/master/img/lang-es.png)](LEEME.md)
+idioma: ![castellano](https://raw.githubusercontent.com/codenautas/multilang/master/img/lang-es.png)
+también disponible en:
+[![inglés](https://raw.githubusercontent.com/codenautas/multilang/master/img/lang-en.png)](README.md)
 
-<!--lang:es--]
 
 Grabador de entrevistas
 
-[!--lang:en-->
-
-# Features
- * voice record, pause/resume, stop 
- * check list of topics/questions
- * tag the record with each check
- * download the audio and tag file
-
-<!--lang:es--]
 
 # Características
  * graba audio; puede pausar la grabación y reanuadar las veces que sea necesario
@@ -34,31 +34,12 @@ Grabador de entrevistas
  * registra el momento en que se hace cada check durante la grabación
  * descarga tanto el audio como el archivo que contiene los registros de los tags
  
-[!--lang:en-->
-
-# Main goal
-
-This project's main objective is to be the final development of a Phonegap course.
-
-<!--lang:es--]
 
 # Objetivo principal
 
 Este proyecto tiene como objetivo principal ser el trabajo práctico final integrador de un curso de Phonegap. 
 Las características, definiciones funcionales y decisiones de diseño en general estarán supeditadas a ese objetivo.
  
-[!--lang:en-->
-
-# Use cases
-
-All of de use cases are based on this example: 
-***We are doing admission interview to a Phonegap course***
-
-We assume that the interviewer is familiarized with de check list. 
-
-The check list fits in one window in an iPad (or a phone with little font). 
-
-<!--lang:es--]
 
 # Casos de uso
 
@@ -68,20 +49,6 @@ El entrevistador conoce la lista de temas/preguntas del check list.
 
 El check list cabe en una pantalla de iPad o en un celular con letra muy pequeña
 
-[!--lang:en-->
-
-## Case 1: Interview in progress
-1. The interviewer press `Start`,
-2. He reads the first item in the check list: *Introduce yourself and tell why you want to take this course*.
-3. He press de check box of that item.
-4. He hears the story of the interviewee. 
-It the interviewee says something about any of the items in the check list 
-the interviewer press the appropiate check box. 
-5. When the interviewee stops the speech the interviewer reads the first unchecked item in the check list.
-6. This is repeated until there is no unchecked items
-or until the interviewer considers that must be terminated the interview.
-
-<!--lang:es--]
 
 ## Caso 1: Desarrollo de la entrevista
 1. El entrevistador presiona `Start` en la pantalla del dispositivo móvil. 
@@ -117,15 +84,9 @@ ingresa cada uno de los ítems (especificando número, texto y tipo de ítem) en
 2. Presiona el botón `Transmit`
 3. El programa envía las entrevistas al servidor
 
-[!--lang:en-->
-
-### Register File Format
-
-<!--lang:es--]
 
 ### Formato del archivo de registro del *check list*
 
-[!--lang:*-->
 ```yaml
 interview: 34
 start: 2001-12-14T21:59:43.10-03:00
@@ -138,13 +99,6 @@ tags:
 stop: 2001-12-14T22:11:02.35-03:00
 ```
 
-<!--lang:en-->
-
-# Licence
-
-[MIT](LICENSE)
-
-<!--lang:es--]
 
 # Licencia
 
@@ -152,4 +106,3 @@ stop: 2001-12-14T22:11:02.35-03:00
 
 .............................
 
-[!--lang:*-->
