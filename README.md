@@ -49,7 +49,7 @@ Las características, definiciones funcionales y decisiones de diseño en genera
 
 [!--lang:*-->
 
-![example](https://raw.githubusercontent.com/codenautas/interview-recorder/master/doc/screen-record.png)
+![examples](https://raw.githubusercontent.com/codenautas/interview-recorder/master/doc/screens.png)
 
 <!--lang:en-->
 

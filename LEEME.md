@@ -41,7 +41,7 @@ Este proyecto tiene como objetivo principal ser el trabajo práctico final integ
 Las características, definiciones funcionales y decisiones de diseño en general estarán supeditadas a ese objetivo.
 
 
-![example](https://raw.githubusercontent.com/codenautas/interview-recorder/master/doc/screen-record.png)
+![examples](https://raw.githubusercontent.com/codenautas/interview-recorder/master/doc/screens.png)
 
 
 # Casos de uso
@@ -51,7 +51,6 @@ Para facilitar se usará como ejemplo una entrevista de admisión a un curso de 
 El entrevistador conoce la lista de temas/preguntas del check list. 
 
 El check list cabe en una pantalla de iPad o en un celular con letra muy pequeña
-
 
 ## Caso 1: Desarrollo de la entrevista
 1. El entrevistador presiona `Start` en la pantalla del dispositivo móvil. 
@@ -72,7 +71,6 @@ o hasta que el entrevistador considere que ha de darse por terminada la entrevis
 - [ ] 5. Experiencia en desarrollo móvil
 - [ ] 6. Experiencia en desarrollo en general
 
-
 ### Adicionales
 7. Puede haber algunos campos de texto que se puedan llenar durante la entrevista
 8. Si un ítem del *check list* se presiona más de una vez el programa registra cada vez que fue presionado 
@@ -87,6 +85,7 @@ ingresa cada uno de los ítems (especificando número, texto y tipo de ítem) en
 1. El entrevistador conecta el dispositivo a la red y se loguea en el servidor
 2. Presiona el botón `Transmit`
 3. El programa envía las entrevistas al servidor
+
 
 ## Caso 4: Revisar lo grabado
 1. El entrevistador presiona el botón `Review`
