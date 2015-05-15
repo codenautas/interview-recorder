@@ -46,8 +46,12 @@ This project's main objective is to be the final development of a Phonegap cours
 
 Este proyecto tiene como objetivo principal ser el trabajo práctico final integrador de un curso de Phonegap. 
 Las características, definiciones funcionales y decisiones de diseño en general estarán supeditadas a ese objetivo.
- 
-[!--lang:en-->
+
+[!--lang:*-->
+
+![example](https://raw.githubusercontent.com/codenautas/interview-recorder/master/doc/screen-record.png)
+
+<!--lang:en-->
 
 # Use cases
 
