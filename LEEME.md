@@ -39,7 +39,10 @@ Grabador de entrevistas
 
 Este proyecto tiene como objetivo principal ser el trabajo práctico final integrador de un curso de Phonegap. 
 Las características, definiciones funcionales y decisiones de diseño en general estarán supeditadas a ese objetivo.
- 
+
+
+![example](https://raw.githubusercontent.com/codenautas/interview-recorder/master/doc/screen-record.png)
+
 
 # Casos de uso
 
@@ -69,6 +72,7 @@ o hasta que el entrevistador considere que ha de darse por terminada la entrevis
 - [ ] 5. Experiencia en desarrollo móvil
 - [ ] 6. Experiencia en desarrollo en general
 
+
 ### Adicionales
 7. Puede haber algunos campos de texto que se puedan llenar durante la entrevista
 8. Si un ítem del *check list* se presiona más de una vez el programa registra cada vez que fue presionado 
@@ -83,6 +87,29 @@ ingresa cada uno de los ítems (especificando número, texto y tipo de ítem) en
 1. El entrevistador conecta el dispositivo a la red y se loguea en el servidor
 2. Presiona el botón `Transmit`
 3. El programa envía las entrevistas al servidor
+
+## Caso 4: Revisar lo grabado
+1. El entrevistador presiona el botón `Review`
+2. El programa muestra 
+  1. el botón `Play`, `Pause`, `Stop` y `Rewind 10'`
+  2. la línea de tiempo que representa la grabación con un 0:00 al comenzar y un XX:XX al terminar y botones con los números de ítems señalando sobre la recta los lugares donde se presionó cada ítem
+  3. Un indicador de avance/desplazamiento sobre la barra de tiempo
+  4. oscurecidos los ítems que no han sido presionados 
+  5. brillantes los ítems que han sido presionados (con un botón de `Go` por cada vez que se presionaron). 
+  6. habilitados los tildes de todos los ítems
+  7. un par de botones genéricos `Delete 1 tag`, `Delete many tags`
+3. El entrevisitador presiona `Play` y empieza a escuchar (y `Pause` y de nuevo `Play` cada vez que lo necesite)
+4. Cuando quiere escuchar en qué lugar tildó cierto ítem durante la entrevista presiona el botón `Go`, 
+el programa posiciona el audio en ese punto y empieza a emitirlo
+5. Puede cambiar de lugar la reproducción moviendo el indicador de avance/desplazamiento
+6. Si quiere retroceder puede usar el botón `Review 10'` que retrocede 10 segundos y reproduce desde ahí 
+(o sea no se necesita poner `Play` otra vez)
+7. Si quiere puede agregar tildes presionando el *check box* correspondiente 
+(y el programa agrega el botón `Go` y el botón con el número de ítem sobre la línea de tiempo)
+8. Si quiere borrar un tag presiona alguno de los botones `Delete tags` y aparecen cruces rojas sobre los botones `Go` para borrarlos presionando las cruces. 
+El botón `Delete tag` hace desaparecer las cruces al primer borrado, 
+el botón `Delete many tags` permite borrar varios a la vez.
+En ambos casos aparece un botón naranja `Stop`, presionando ese botón también desaparecen las cruces de borrado. 
 
 
 ### Formato del archivo de registro del *check list*
