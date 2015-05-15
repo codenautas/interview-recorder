@@ -158,22 +158,22 @@ ingresa cada uno de los ítems (especificando número, texto y tipo de ítem) en
 2. The program displays
   1. `Play`, `Pause`, `Stop` and `Rewind 10'` buttons
   2. The timeline representing the record with a 0:00 in the beginning and a xx:xx at the end and buttons with the 
-  numbers of items mark on the timeline when the button was pressed 
-  3.  
+  numbers of items checked on the timeline when the button was pressed 
+  3. Timeline playhead
   4. Dark grey items that were not pressed
-  5. Bright colors for the items that were pressed
+  5. Bright colours for the items that were pressed
   6. Availability of the checks of all of the items
   7. A couple of generic buttons: `Delete 1 tag`, `Delete many tags`
 3. The interviewer presses `Play` and the voice record starts (and `Pause` and again `Play` every time it is needed)
-4. If it is wanted to be heard when a particular item was pressed during the interview, a `Go` button can be pressed
-5. The record can be rewind or fast forward moving the....
+4. A `Go` button that can be pressed to hear a particular item that was pressed during the interview
+5. The record can be rewind or fast forward moving the timeline playhead
 6. The `Review 10'` could be used for rewining 10 seconds and the records starts playing from that point 
 (no need of `Play` button to be pressed again)
-7. Checks could be added by pressing the propper *check box*
-8. `Delete tags` button are pressed delete a tag and red crosses display on `Go` buttons for deleting the tag by pressing the cross.
+7. Checks could be added by pressing the proper *check box*
+8. `Delete tags` buttons are pressed to delete a tag and red crosses display on `Go` buttons for deleting the tag by pressing the cross.
 `Delete tag` button vanishes crosses after the first delete,
 `Delete many tags` button allows to delete several tags simultaneously.
-In both cases, a red `Stop` button displays, crosses can be deleted by pressing this button
+In both cases, an orange `Stop` button displays, crosses can be deleted by pressing this button
 
 <!--lang:es--]
 
