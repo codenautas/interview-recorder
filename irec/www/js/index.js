@@ -75,6 +75,15 @@ function crearEntrevista(){
   return entrevista;
 }
 
+function createTagButton(ref){
+  var button = $('<button />');
+  button.text('+')
+  button.click(function(e){
+    console.log('agregar tag ' + ref + ' en ' + new Date());
+  });
+  return button;
+}
+
   $('#home').on('pagecreate', function(e){
     //creamos el modelo de datos
     var guia = crearGuia();
@@ -91,9 +100,13 @@ function crearEntrevista(){
     $.each(guia.preguntas, function(i,e){
       //creamos un div
       var div = $('<div />');
+      
+      div.append( createTagButton(i) );
+      
       //le asignamos el texto de la pregunta
       div.append(e.texto);
       //y lo agregamos al container (div#respuestas)
       container.append(div);
     });
   });
+  
