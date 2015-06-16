@@ -26,6 +26,7 @@ function init(){
   $.mobile.buttonMarkup.hoverDelay = 0;
   $.mobile.pushStateEnabled = false;
   $.mobile.defaultPageTransition = "none";
+  recordApi.initialize();
   mediaApi.initialize();
 }
 
@@ -133,6 +134,7 @@ function createSeekButton(time){
   });
   
 var mediaApi = {
+  pathToPlay: 'media stop/played/rec success',
   initialize: function() {
     //asignamos una instancia de Media a mediaApi.audio
     mediaApi.audio = new Media('/android_asset/www/intro.mp3', mediaApi.onSuccess, mediaApi.onError, mediaApi.onStatus);
@@ -166,7 +168,7 @@ var mediaApi = {
       mediaApi.interval = null; // <-- reset
       mediaApi.isPlaying = false; // <-- switch
     }
-    console.log('media stop/played/rec success');
+    console.log(mediaApi.pathToPlay);
   },  
   onStatus: function(status) {
     switch(status) {
@@ -234,9 +236,9 @@ var mediaApi = {
     mediaApi.interval2 = setInterval(function(){
       var dur = mediaApi.audio.getDuration();
       mediaApi.totalTime.text(dur.toFixed(2)+'...');
-        if(dur>0){
-            clearInterval(mediaApi.interval2);
-        }
+      if(dur>0){
+          clearInterval(mediaApi.interval2);
+      }
       mediaApi.audio.seekTo(100,function(){
         var dur = mediaApi.audio.getDuration();
         mediaApi.totalTime.text(dur.toFixed(2)+'.');
@@ -250,6 +252,80 @@ var mediaApi = {
     console.log('audio file loaded');
   },
 }
+
+function getRecordFile(callback){ // <-- recibimos una func como parametro
+  var root = cordova.file.externalDataDirectory;
+  window.resolveLocalFileSystemURL(root, function(rootDir){
+    rootDir.getDirectory('audio', {create: true}, function(audioDir){
+      audioDir.getFile('record.amr', {create: true}, function(file){
+        callback(file); // <-- ejecutamos la funcion, pasandole
+                        // el resultado
+      });
+    });
+  });
+}
+
+var recordApi = {
+  initialize: function(){
+    //guardamos una referencia al boton
+    recordApi.button = $('#rec');
+    //inicializar el boton
+    
+    recordApi.button.click(function(e){
+      e.preventDefault();
+      if(recordApi.isRecording) {
+        recordApi.stop();
+      }else{
+        recordApi.record();
+      }
+    });
+
+    //inicializar estado
+    recordApi.isRecording = false;
+
+    //obtener la ruta al archivo de grabacion
+    getRecordFile(function(file){
+      recordApi.button.disabled=false;
+      recordApi.recordFile = file.nativeURL;
+      mediaApi.pathToPlay = file.nativeURL;
+      recordApi.media = new Media(recordApi.recordFile, recordApi.onStop, recordApi.onError, recordApi.onStatus);
+    });
+  },
+  onStop: function(){
+    recordApi.media.release();
+    mediaApi.load(recordApi.recordFile);
+  },
+  onError: function(err){
+    console.log('Recording error');
+    console.log(err);
+  },
+  onStatus: function(status){
+    switch(status) {
+      case Media.MEDIA_RUNNING:
+        console.log('Status change: running');
+        recordApi.isRecording = true;
+        recordApi.button.css('background-color','red');
+        recordApi.button.text('Grabando...');
+      break;
+      case Media.MEDIA_STOPPED:
+        console.log('Status change: stopped');
+        recordApi.isRecording = false;
+        recordApi.button.css('background-color', '#333');
+        recordApi.button.text('Grabar()');
+      break;
+    }
+  },
+  record: function(){
+    recordApi.button.html('').append('Rec').append($('<br>')).append(
+        $('<span style="font-size:40%">').text('(press to stop)')
+    );
+    recordApi.media.startRecord();
+  },
+  stop: function(){
+    recordApi.button.text('Rec');
+    recordApi.media.stopRecord();
+  },
+}  
 
 window.addEventListener('error',function(e){
     var div=document.createElement('div');

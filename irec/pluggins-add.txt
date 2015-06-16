@@ -1,0 +1,5 @@
+phonegap plugin add org.apache.cordova.media
+phonegap plugin add org.apache.cordova.file
+
+\irec\www\schuman.mp3 bajado de https://es.wikipedia.org/wiki/Declaraci%C3%B3n_Schuman
+
