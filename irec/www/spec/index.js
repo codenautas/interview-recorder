@@ -65,4 +65,3 @@ describe('app', function() {
         });
     });
 });
-

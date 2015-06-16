@@ -27,3 +27,73 @@ function init(){
   $.mobile.pushStateEnabled = false;
   $.mobile.defaultPageTransition = "none";
 }
+
+
+function crearGuia() {
+  var guia = {
+    nombre: 'Curso Phonegap',
+    preguntas: {
+      1: {texto: "Preséntese y cuénteme por qué quiere hacer el curso de Phonegap"},
+      2: {texto: "Nombre"},
+      3: {texto: "Edad"},
+      4: {texto: "Conocimientos previos"},
+      5: {texto: "Experiencia en mobile"},
+      6: {texto: "Experiencia general"}
+    }
+  };
+  return guia;
+}
+
+function crearEntrevista(){
+  var entrevista = {
+    interview: 34,
+    start: '2001-12-14T21:59:43.10-03:00',
+    stop: '2001-12-14T22:11:02.35-03:00',
+    tags: [
+      {
+        ref: 1,
+        time: '2001-12-14T22:00:18.15-03:00'
+      },
+      {
+        ref: 5,
+        time: '2001-12-14T22:03:21.33-03:00'
+      },
+      {
+        ref: 2,
+        time: '2001-12-14T22:04:02.22-03:00'
+      },
+      {
+        ref: 3,
+        time: '2001-12-14T22:04:02.43-03:00'
+      },
+      {
+        ref: 5,
+        time: '2001-12-14T22:07:41.56-03:00'
+      }
+    ]
+  }
+  return entrevista;
+}
+
+  $('#home').on('pagecreate', function(e){
+    //creamos el modelo de datos
+    var guia = crearGuia();
+
+    //seleccionamos el div con id=guia
+    var container = $('div#guia', this);
+
+    //lo vaciamos
+    container.empty();
+
+    //creamos una entrevista para revision
+    var entrevista = crearEntrevista();
+
+    $.each(guia.preguntas, function(i,e){
+      //creamos un div
+      var div = $('<div />');
+      //le asignamos el texto de la pregunta
+      div.append(e.texto);
+      //y lo agregamos al container (div#respuestas)
+      container.append(div);
+    });
+  });
