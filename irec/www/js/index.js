@@ -84,6 +84,15 @@ function createTagButton(ref){
   return button;
 }
 
+function createSeekButton(time){
+  var button = $('<button />')
+    .text('Go!')
+    .click(function(e){
+      console.log('reproducir desde '+time);
+    });
+  return button;
+}
+
   $('#home').on('pagecreate', function(e){
     //creamos el modelo de datos
     var guia = crearGuia();
@@ -105,6 +114,18 @@ function createTagButton(ref){
       
       //le asignamos el texto de la pregunta
       div.append(e.texto);
+
+      var tags = entrevista.tags.filter(function(tag){
+        //devolvemos true solo si el tag.ref es igual
+        //al key de la pregunta
+        return tag.ref == i;
+      });
+      //y ahora que tenemos el array tags, iteramos
+      $.each(tags, function(ii,ee){
+        //creamos el boton y lo agregamos al div
+        div.append( createSeekButton(ee.time) );
+      });
+
       //y lo agregamos al container (div#respuestas)
       container.append(div);
     });
