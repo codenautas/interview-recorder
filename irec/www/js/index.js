@@ -26,6 +26,7 @@ function init(){
   $.mobile.buttonMarkup.hoverDelay = 0;
   $.mobile.pushStateEnabled = false;
   $.mobile.defaultPageTransition = "none";
+  mediaApi.initialize();
 }
 
 
@@ -131,3 +132,128 @@ function createSeekButton(time){
     });
   });
   
+var mediaApi = {
+  initialize: function() {
+    //asignamos una instancia de Media a mediaApi.audio
+    mediaApi.audio = new Media('/android_asset/www/intro.mp3', mediaApi.onSuccess, mediaApi.onError, mediaApi.onStatus);
+
+    //inicializacion de botones
+    $('#play').click(function(e) {
+      e.preventDefault();
+      mediaApi.play();
+    });
+
+    $('#pause').click(function(e){
+      e.preventDefault();
+      mediaApi.pausa();
+    });    
+
+    //inicializacion de indicadores de tiempo
+    mediaApi.currentTime = $('#currentTime').text(0);
+    mediaApi.totalTime = $('#totalTime').text(0);
+
+    //inicializacion de estado de reproduccion
+    mediaApi.isPlaying = false;
+    
+    mediaApi.load('/android_asset/www/schuman.mp3');
+  },
+  //a partir de aca son los handlers/calllbacks
+  //de success, status y error.
+  onSuccess: function(){
+    if(mediaApi.interval) { // <-- check
+      clearInterval(mediaApi.interval); // <-- clear
+      // mediaApi.currentTime.text(0); // <-- reset
+      mediaApi.interval = null; // <-- reset
+      mediaApi.isPlaying = false; // <-- switch
+    }
+    console.log('media stop/played/rec success');
+  },  
+  onStatus: function(status) {
+    switch(status) {
+      case Media.MEDIA_NONE: console.log('Status change: idle');
+      break;
+      case Media.MEDIA_STARTING: console.log('Status change: starting');
+      break;
+      case Media.MEDIA_RUNNING:
+        console.log('Status change: running');
+        if(!mediaApi.audio.initialized) { // <-- check!
+          mediaApi.audio.getCurrentPosition(function(){
+            console.log(mediaApi.audio._duration);
+            mediaApi.audio.stop(); // <-- STOP!
+            mediaApi.audio.initialized = true; // <-- switch
+          });
+        }
+      break;
+      case Media.MEDIA_PAUSED: console.log('Status change: paused');
+      break;
+      case Media.MEDIA_STOPPED: console.log('Status change: stopped');
+      break;
+      default: console.log('unknown status');
+    }
+  },
+  onError: function(err) {
+    console.log('Error');
+    console.log(err);
+  },
+  play: function() {
+    if(mediaApi.isPlaying) {
+      return;
+    }
+    if(mediaApi.interval){
+      clearInterval(mediaApi.interval);  
+      mediaApi.interval=null;
+    }
+    mediaApi.interval = setInterval(function(){
+      mediaApi.audio.getCurrentPosition(function(t){
+        mediaApi.currentTime.text(t.toFixed(2));
+      });
+    },100);
+    mediaApi.isPlaying = true;
+    mediaApi.audio.play();
+  },
+  pausa: function() {
+    if(!mediaApi.isPlaying) {
+      return;
+    }
+    if(mediaApi.interval){
+        clearInterval(mediaApi.interval);
+        mediaApi.interval=null;
+    }
+    mediaApi.isPlaying = false;
+    mediaApi.audio.pause();
+  },
+  load: function(path) {
+    if(mediaApi.isPlaying) { // <-- check
+      mediaApi.pausa();
+    }
+    if(mediaApi.audio) { // <-- check
+      mediaApi.audio.release();
+    }
+    mediaApi.audio = new Media(path, mediaApi.onSuccess, mediaApi.onError, mediaApi.onStatus);
+    //falso play
+    mediaApi.interval2 = setInterval(function(){
+      var dur = mediaApi.audio.getDuration();
+      mediaApi.totalTime.text(dur.toFixed(2)+'...');
+        if(dur>0){
+            clearInterval(mediaApi.interval2);
+        }
+      mediaApi.audio.seekTo(100,function(){
+        var dur = mediaApi.audio.getDuration();
+        mediaApi.totalTime.text(dur.toFixed(2)+'.');
+        mediaApi.currentTime.text(t.toFixed(2));
+        if(dur>0){
+            clearInterval(mediaApi.interval2);
+            mediaApi.audio.seekTo(0);
+        }
+      });
+    },1000);
+    console.log('audio file loaded');
+  },
+}
+
+window.addEventListener('error',function(e){
+    var div=document.createElement('div');
+    div.textContent=e.message || ''+e;
+    document.body.appendChild(div);
+    div.textContent+=e.stack;
+});
