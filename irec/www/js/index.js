@@ -19,6 +19,7 @@ $(document).ready(function(){
 $.when(jqmReady,documentReady, deviceReady).then(init);
 
 function init(){
+  uglyLog('init');
   console.log('init');
   // Configuracion de JQM para phonegap
   $.mobile.allowCrossDomainPages = true;
@@ -96,6 +97,7 @@ function createSeekButton(time){
 }
 
   $('#home').on('pagecreate', function(e){
+    uglyLog('pageCreate');
     //creamos el modelo de datos
     var guia = crearGuia();
 
@@ -136,6 +138,7 @@ function createSeekButton(time){
 var mediaApi = {
   pathToPlay: 'media stop/played/rec success',
   initialize: function() {
+    uglyLog('new');
     //asignamos una instancia de Media a mediaApi.audio
     mediaApi.audio = new Media('/android_asset/www/intro.mp3', mediaApi.onSuccess, mediaApi.onError, mediaApi.onStatus);
 
@@ -156,6 +159,8 @@ var mediaApi = {
 
     //inicializacion de estado de reproduccion
     mediaApi.isPlaying = false;
+
+    uglyLog('to load');
     
     mediaApi.load('/android_asset/www/schuman.mp3');
   },
@@ -268,6 +273,8 @@ function getRecordFile(callback){ // <-- recibimos una func como parametro
 var recordApi = {
   initialize: function(){
     //guardamos una referencia al boton
+    uglyLog('button');
+
     recordApi.button = $('#rec');
     //inicializar el boton
     
@@ -285,7 +292,8 @@ var recordApi = {
 
     //obtener la ruta al archivo de grabacion
     getRecordFile(function(file){
-      recordApi.button.disabled=false;
+      uglyLog('getRecord');
+      recordApi.button.prop( "disabled", false );
       recordApi.recordFile = file.nativeURL;
       mediaApi.pathToPlay = file.nativeURL;
       recordApi.media = new Media(recordApi.recordFile, recordApi.onStop, recordApi.onError, recordApi.onStatus);
@@ -305,13 +313,11 @@ var recordApi = {
         console.log('Status change: running');
         recordApi.isRecording = true;
         recordApi.button.css('background-color','red');
-        recordApi.button.text('Grabando...');
       break;
       case Media.MEDIA_STOPPED:
         console.log('Status change: stopped');
         recordApi.isRecording = false;
         recordApi.button.css('background-color', '#333');
-        recordApi.button.text('Grabar()');
       break;
     }
   },
@@ -327,9 +333,17 @@ var recordApi = {
   },
 }  
 
+function uglyLog(message){
+    var div=document.getElementById('uglyLog');
+    if(!div){
+        div=document.createElement('div');
+        div.id='uglyLog';
+        document.body.appendChild(div);
+    }
+    div.textContent=(div.textContent||'') + message+'. ';
+    return div;
+}
+
 window.addEventListener('error',function(e){
-    var div=document.createElement('div');
-    div.textContent=e.message || ''+e;
-    document.body.appendChild(div);
-    div.textContent+=e.stack;
+    uglyLog(e.message || ''+e).textContent+=e.stack;
 });
