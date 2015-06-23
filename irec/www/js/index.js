@@ -180,12 +180,12 @@ function crearGuia() {
     nombre: 'Curso Phonegap',
     id: guid(),
     preguntas: {
-      1: "Preséntese y cuénteme por qué quiere hacer el curso de Phonegap",
-      2: "Nombre",
-      3: "Edad",
-      4: "Conocimientos previos",
-      5: "Experiencia en mobile",
-      6: "Experiencia general"
+      1: {texto: "Preséntese y cuénteme por qué quiere hacer el curso de Phonegap"},
+      2: {texto: "Nombre"},
+      3: {texto: "Edad"},
+      4: {texto: "Conocimientos previos"},
+      5: {texto: "Experiencia en mobile"},
+      6: {texto: "Experiencia general"}
     }
   };
   return guia;
@@ -366,14 +366,14 @@ function createSeekButton(time){
     //creamos una entrevista para revision
     var entrevista = crearEntrevista();
 
-    $.each(guia.preguntas, function(i,e){
+    $.each(guia.preguntas, function(i,pregunta){
       //creamos un div
       var div = $('<div />');
       
       div.append( createTagButton(i) );
       
       //le asignamos el texto de la pregunta
-      div.append(e.texto);
+      div.append(pregunta.texto);
 
       var tags = entrevista.tags.filter(function(tag){
         //devolvemos true solo si el tag.ref es igual
@@ -580,10 +580,10 @@ $('#interview').on('pageshow', function(e, pages){
   var container = $('#guia', pages.toPage);
   container.empty();
   recordApi.nuevaGrabacion(guia.id, function(){
-    $.each(guia.preguntas, function(i,e){
+    $.each(guia.preguntas, function(i,pregunta){
       var div = $('<div class="respuesta" />');
       div.append(recordApi.createTagButton(i));
-      div.append(e);
+      div.append(pregunta.texto);
 
       container.append(div);
     });
@@ -620,10 +620,10 @@ $('#revision').on('pageshow', function(e, pages){
   var container = $('div#respuestas', pages.toPage);
   container.empty();
   mediaApi.load(pages.toPage.data('entrevistaIdx'));
-  $.each(guia.preguntas, function(i,e){
+  $.each(guia.preguntas, function(i,pregunta){
     var div = $('<div class="respuesta" />');
     div.append(mediaApi.createTagButton(i));
-    div.append(e);
+    div.append(pregunta.texto);
 
     var tags = entrevista.tags.filter(function(tag){
       return tag.ref == i;
