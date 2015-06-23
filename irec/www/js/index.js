@@ -1,6 +1,7 @@
 var deviceReady = $.Deferred();
 var documentReady = $.Deferred();
 var jqmReady = $.Deferred();
+window.console = { log: function (msg) { uglyLog(msg) }};
 console.log('reading main script');
 
 $(document).on('deviceready', function(){
@@ -41,7 +42,7 @@ function init(){
 }
 
 function uglyLog(message){
-    console.log(message);
+    // console.log(message);
     if($){
         $('[data-role=footer]').append(
             $('<p>').text(message).addClass('uglylog').click(function(){
