@@ -17,9 +17,7 @@ $(document).ready(function(){
 });
 
 $.when(jqmReady,documentReady, deviceReady).then(init);
-
 function init(){
-  uglyLog('init');
   console.log('init');
   // Configuracion de JQM para phonegap
   $.mobile.allowCrossDomainPages = true;
@@ -27,8 +25,61 @@ function init(){
   $.mobile.buttonMarkup.hoverDelay = 0;
   $.mobile.pushStateEnabled = false;
   $.mobile.defaultPageTransition = "none";
-  recordApi.initialize();
-  mediaApi.initialize();
+  uglyLog('iniciando');
+
+  fileApi.initialize(function(err){
+    if(err) { // <-- checkeamos si hay error
+      uglyLog('file api error');
+      uglyLog(err);
+      return; // <-- y cortamos la ejecucion de ser asi
+    }
+    uglyLog('inicializado');
+
+    // aca va mas codigo de inicializacion
+    // sabiendo que fileApi esta inicializado
+  });
+}
+
+var fileApi = {
+  ready: false, // <--solo por las dudas
+  initialize: function(callback){
+    var path = cordova.file.externalDataDirectory;
+    //si no hay problemas, llamamos a callback con el primer
+    //parametro en null (lo que seria el error)
+    var onResolve = function(directoryEntry) {
+      fileApi.dir = directoryEntry;
+      fileApi.ready = true;
+      callback && callback(null, fileApi);
+    }
+    //si hay un error llamamos a callback con el error
+    //como primer parametro (ver arriba)
+    var onError = function(err){
+      callback && callback(err, fileApi);
+    }
+    window.resolveLocalFileSystemURL(path, onResolve, onError);
+  },
+  writeTextFile: function(file, content, callback) {
+    var onFile = function(fileEntry) {
+      fileEntry.createWriter(
+        function(fileWriter){
+          fileWriter.write(content);
+          callback && callback(content);
+        }, fileApi.onError);
+    }
+    fileApi.dir.getFile(file, {create: true}, onFile, fileApi.onError);
+  },
+  onError: function(err) {
+    console.log(err);
+  },
+  getDir: function(dir, callback) {
+    var onDir = function(dir){
+      callback && callback(null, dir);
+    }
+    var onError = function(err) {
+      callback && callback(err, null);
+    }
+    fileApi.dir.getDirectory(dir, {create:true}, onDir, onError);
+  }
 }
 
 
@@ -334,16 +385,22 @@ var recordApi = {
 }  
 
 function uglyLog(message){
-    var div=document.getElementById('uglyLog');
-    if(!div){
-        div=document.createElement('div');
-        div.id='uglyLog';
-        document.body.appendChild(div);
+    console.log(message);
+    if($){
+        $('[data-role=footer]').append($('<p>').text(message));
+    }else{
+        var div=document.getElementById('uglyLog');
+        if(!div){
+            div=document.createElement('div');
+            div.id='uglyLog';
+            document.body.appendChild(div);
+        }
+        div.textContent=(div.textContent||'') + message+'. ';
+        return div;
     }
-    div.textContent=(div.textContent||'') + message+'. ';
-    return div;
 }
 
 window.addEventListener('error',function(e){
-    uglyLog(e.message || ''+e).textContent+=e.stack;
+    uglyLog(e.message || ''+e)
+    uglyLog(''+e.stack);
 });
