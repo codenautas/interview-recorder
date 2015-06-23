@@ -17,6 +17,7 @@ $(document).ready(function(){
 });
 
 $.when(jqmReady,documentReady, deviceReady).then(init);
+
 function init(){
   console.log('init');
   // Configuracion de JQM para phonegap
@@ -37,6 +38,7 @@ function init(){
     // sabiendo que fileApi esta inicializado
     guias.initialize();
     entrevistas.initialize();
+    recordApi.initialize();
   });
 }
 
@@ -176,13 +178,14 @@ var entrevistas = {
 function crearGuia() {
   var guia = {
     nombre: 'Curso Phonegap',
+    id: guid(),
     preguntas: {
-      1: {texto: "Preséntese y cuénteme por qué quiere hacer el curso de Phonegap"},
-      2: {texto: "Nombre"},
-      3: {texto: "Edad"},
-      4: {texto: "Conocimientos previos"},
-      5: {texto: "Experiencia en mobile"},
-      6: {texto: "Experiencia general"}
+      1: "Preséntese y cuénteme por qué quiere hacer el curso de Phonegap",
+      2: "Nombre",
+      3: "Edad",
+      4: "Conocimientos previos",
+      5: "Experiencia en mobile",
+      6: "Experiencia general"
     }
   };
   return guia;
@@ -218,6 +221,123 @@ function crearEntrevista(){
   }
   return entrevista;
 }
+
+var recordApi = {
+  initialize: function(callback){
+    uglyLog('recordApi, inicializando');
+    //referencia al boton
+    recordApi.button = $('#record');
+
+    //referencia al reloj
+    recordApi.clock = $('#record-time');
+
+    //inicializar estado
+    recordApi.isRecording = false;
+
+    //inicializar variable para el timer
+    recordApi.timer = null;
+
+    //referencia al directorio "audio"
+    fileApi.getDir('audio', function(err, dir){
+      if(err) {
+        console.log(err);
+        return;
+      }
+      recordApi.audioDir = dir;
+      uglyLog('recordApi por llamar al callback');
+      callback && callback();
+    });
+    
+    uglyLog('recordApi, inicializado');
+  },
+  nuevaGrabacion: function(guiaId, callback){
+    var fileName = guid();
+    var onError = function(err) {
+      callback && callback(err, null);
+    }
+    var onFile = function(fileEntry) {
+      recordApi.entrevista = {
+        id: fileName,
+        audioPath: fileEntry.nativeURL,
+        interview: guiaId,
+        start: null,
+        stop: null,
+        tags: []
+      };
+      recordApi.recordFile = fileEntry.nativeURL;
+      callback && callback(null, fileEntry);
+    }
+    recordApi.audioDir.getFile(fileName, {create:true}, onFile, onError);
+  },
+  createTagButton: function(ref) {
+    var button = $('<button />')
+      .addClass("ui-btn ui-btn-inline ui-mini")
+      .text('+')
+      .click(function(e){
+        if(!recordApi.isRecording) {
+          return;
+        }
+        console.log('tag ' + ref + ' @ ' + new Date());
+        recordApi.entrevista.tags.push({ref: ref, time: new Date()});
+      });
+    return button;
+  },
+  updateClock: function(){
+    var recordTime = ((new Date() - recordApi.entrevista.start) / 1000) << 0;
+    recordApi.clock.text(clockFormat(recordTime));
+  },
+  record: function(){
+    recordApi.media = new Media(recordApi.recordFile, recordApi.onStop, recordApi.onError, recordApi.onStatus);
+    recordApi.media.startRecord();
+  },
+  stop: function(){
+    recordApi.media.stopRecord();
+  },
+  onStop: function(){
+    console.log('recordApi.onStop');
+    recordApi.media.release();
+    recordApi.media = null;
+    recordApi.entrevista.stop = new Date();
+    entrevistas.agregar(recordApi.entrevista, function(entrevista){
+      $('#revision').data('entrevistaIdx',entrevistas.lista.length - 1);
+      $(':mobile-pagecontainer').pagecontainer('change','#revision');
+    });
+    // mediaApi.load(recordApi.recordFile);
+  },
+  onError: function(err){
+    console.log('Recording error');
+    console.log(err);
+  },
+  onStatus: function(status){
+    switch(status) {
+      case Media.MEDIA_NONE: console.log('Status change: idle');
+      break;
+      case Media.MEDIA_STARTING:
+        console.log('Status change: starting');
+      break;
+      case Media.MEDIA_RUNNING:
+        console.log('Status change: running');
+        recordApi.timer = setInterval(recordApi.updateClock,500);
+        recordApi.isRecording = true;
+        recordApi.entrevista.start = new Date();
+        recordApi.button.css('background-color','red');
+        recordApi.button.text('Detener');
+        $.mobile.loading('hide');
+      break;
+      case Media.MEDIA_PAUSED: console.log('Status change: paused');
+      break;
+      case Media.MEDIA_STOPPED:
+        console.log('Status change: stopped');
+        clearInterval(recordApi.timer);
+        recordApi.timer = null;
+        recordApi.isRecording = false;
+        recordApi.button.css('background-color', '#333');
+        recordApi.button.text('Grabar');
+      break;
+      default: console.log('unknown status');
+    }
+  }
+};
 
 function createTagButton(ref){
   var button = $('<button />');
@@ -407,68 +527,24 @@ function getRecordFile(callback){ // <-- recibimos una func como parametro
   });
 }
 
-var recordApi = {
-  initialize: function(){
-    //guardamos una referencia al boton
-    uglyLog('button');
+function clockFormat(secs) {
+  secs = secs << 0;
+  var minutes = (secs / 60) << 0;
+  var seconds = secs % 60;
+  minutes = minutes < 10 ? "0"+minutes : minutes;
+  seconds = seconds < 10 ? "0"+seconds : seconds;
+  return minutes+":"+seconds;
+}
 
-    recordApi.button = $('#rec');
-    //inicializar el boton
-    
-    recordApi.button.click(function(e){
-      e.preventDefault();
-      if(recordApi.isRecording) {
-        recordApi.stop();
-      }else{
-        recordApi.record();
-      }
-    });
-
-    //inicializar estado
-    recordApi.isRecording = false;
-
-    //obtener la ruta al archivo de grabacion
-    getRecordFile(function(file){
-      uglyLog('getRecord');
-      recordApi.button.prop( "disabled", false );
-      recordApi.recordFile = file.nativeURL;
-      mediaApi.pathToPlay = file.nativeURL;
-      recordApi.media = new Media(recordApi.recordFile, recordApi.onStop, recordApi.onError, recordApi.onStatus);
-    });
-  },
-  onStop: function(){
-    recordApi.media.release();
-    mediaApi.load(recordApi.recordFile);
-  },
-  onError: function(err){
-    console.log('Recording error');
-    console.log(err);
-  },
-  onStatus: function(status){
-    switch(status) {
-      case Media.MEDIA_RUNNING:
-        console.log('Status change: running');
-        recordApi.isRecording = true;
-        recordApi.button.css('background-color','red');
-      break;
-      case Media.MEDIA_STOPPED:
-        console.log('Status change: stopped');
-        recordApi.isRecording = false;
-        recordApi.button.css('background-color', '#333');
-      break;
-    }
-  },
-  record: function(){
-    recordApi.button.html('').append('Rec').append($('<br>')).append(
-        $('<span style="font-size:40%">').text('(press to stop)')
-    );
-    recordApi.media.startRecord();
-  },
-  stop: function(){
-    recordApi.button.text('Rec');
-    recordApi.media.stopRecord();
-  },
-}  
+function guid() {
+  function s4() {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+  }
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+    s4() + '-' + s4() + s4() + s4();
+}
 
 function uglyLog(message){
     console.log(message);
