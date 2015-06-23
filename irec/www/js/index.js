@@ -35,9 +35,10 @@ function init(){
       console.log(err);
       return; // <-- y cortamos la ejecucion de ser asi
     }
-
     // aca va mas codigo de inicializacion
     // sabiendo que fileApi esta inicializado
+    guias.initialize();
+    entrevistas.initialize();    
   });
 }
 
@@ -83,6 +84,111 @@ var fileApi = {
   }
 }
 
+var guias = {
+  lista: [], // <-- array para tener la lista de guias a mano
+  ready: false,
+  initialize: function(){
+    guias.obtenerGuias(function(err, contents){
+      if(err) {
+        console.log('Error obteniendo el archivo de guias');
+        guias.lista = [];
+      }
+      if(contents) {
+        guias.lista = JSON.parse(contents);
+      }
+      guias.ready = true;
+      guias.lista.push(crearGuia());
+      guias.guardarGuias(function(){console.log('se guardaron las guias')})      
+    });
+  },
+  guardarGuias: function(callback){
+    var guiasEnTexto = JSON.stringify(guias.lista);
+    fileApi.writeTextFile('guias.json', guiasEnTexto, function(){
+      callback && callback();
+    });
+  },
+  obtenerGuias: function(callback) {
+    var onError = function(err) {
+      callback && callback(err, null);
+    }
+    var onFile = function(fileEntry) {
+      fileEntry.file(
+        function(fileObject){
+          var reader = new FileReader();
+          reader.onloadend = function(){
+            callback && callback(null, this.result);
+          }
+          reader.readAsText(fileObject);
+        },
+        onError
+      );
+    }
+    fileApi.dir.getFile('guias.json', {create:true}, onFile, onError);
+  }
+}
+
+function crearGuia() {
+  var guia = {
+    nombre: 'Curso Phonegap',
+    preguntas: {
+      1: {texto: "Preséntese y cuénteme por qué quiere hacer el curso de Phonegap"},
+      2: {texto: "Nombre"},
+      3: {texto: "Edad"},
+      4: {texto: "Conocimientos previos"},
+      5: {texto: "Experiencia en mobile"},
+      6: {texto: "Experiencia general"}
+    }
+  };
+  return guia;
+}
+
+var entrevistas = {
+  lista: [],
+  ready: false,
+  initialize: function(){
+    entrevistas.obtenerEntrevistas(function(err, contents){
+      if(err) {
+        console.log('Error obteniendo el archivo de entrevistas');
+        entrevistas.lista = [];
+      }
+      if(contents) {
+        entrevistas.lista = JSON.parse(contents);
+      }
+      entrevistas.ready = true;
+    });
+  },
+  agregar: function(entrevista, callback) {
+    entrevistas.lista.push(entrevista);
+    entrevistas.guardarEntrevistas(function(){
+      console.log('entrevista agregada y guardada');
+      callback && callback(entrevista);
+    });
+  },
+  guardarEntrevistas: function(callback){
+    var entrevistasEnTexto = JSON.stringify(entrevistas.lista);
+    fileApi.writeTextFile('entrevistas.json', entrevistasEnTexto, function(){
+      callback && callback();
+    });
+  },
+  obtenerEntrevistas: function(callback) {
+    var onError = function(err) {
+      callback && callback(err, null);
+    }
+    var onFile = function(fileEntry) {
+      fileEntry.file(
+        function(fileObject){
+          var reader = new FileReader();
+          reader.onloadend = function(){
+            callback && callback(null, this.result);
+          }
+          reader.readAsText(fileObject);
+        },
+        onError
+      );
+    }
+    fileApi.dir.getFile('entrevistas.json', {create:true}, onFile, onError);
+  }
+}
 
 function uglyLog(message){
     var div=document.getElementById('uglyLog');
