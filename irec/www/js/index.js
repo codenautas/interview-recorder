@@ -41,15 +41,24 @@ function init(){
 }
 
 function uglyLog(message){
-    var div=document.getElementById('uglyLog');
-    if(!div){
-        div=document.createElement('div');
-        div.id='uglyLog';
-        document.body.appendChild(div);
+    console.log(message);
+    if($){
+        $('[data-role=footer]').append(
+            $('<p>').text(message).addClass('uglylog').click(function(){
+                $('.uglylog').remove();
+            })
+        );
+    }else{
+        var div=document.getElementById('uglyLog');
+        if(!div){
+            div=document.createElement('div');
+            div.id='uglyLog';
+            document.body.appendChild(div);
+        }
+        div.textContent=(div.textContent||'') + message+'. ';
+        return div;
     }
-    div.textContent=(div.textContent||'') + message+'. ';
-    return div;
-}
+};
 
 window.addEventListener('error',function(e){
     uglyLog(e.message || ''+e).textContent+=e.stack;
