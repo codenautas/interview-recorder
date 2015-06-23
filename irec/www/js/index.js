@@ -1,7 +1,7 @@
 var deviceReady = $.Deferred();
 var documentReady = $.Deferred();
 var jqmReady = $.Deferred();
-window.console = { log: function (msg) { uglyLog(msg) }};
+window.console.log = function (msg) { uglyLog(msg) };
 console.log('reading main script');
 
 $(document).on('deviceready', function(){
