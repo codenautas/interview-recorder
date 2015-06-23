@@ -27,8 +27,17 @@ function init(){
   $.mobile.buttonMarkup.hoverDelay = 0;
   $.mobile.pushStateEnabled = false;
   $.mobile.defaultPageTransition = "none";
-  recordApi.initialize();
-  mediaApi.initialize();
+
+  fileApi.initialize(function(err){
+    if(err) { // <-- checkeamos si hay error
+      console.log('file api error');
+      console.log(err);
+      return; // <-- y cortamos la ejecucion de ser asi
+    }
+
+    // aca va mas codigo de inicializacion
+    // sabiendo que fileApi esta inicializado
+  });
 }
 
 function uglyLog(message){
