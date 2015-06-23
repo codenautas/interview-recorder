@@ -33,6 +33,10 @@ function init(){
       console.log(err);
       return; // <-- y cortamos la ejecucion de ser asi
     }
+    // aca va mas codigo de inicializacion
+    // sabiendo que fileApi esta inicializado
+  });
+    
 }
 var fileApi = {
   ready: false, // <--solo por las dudas
