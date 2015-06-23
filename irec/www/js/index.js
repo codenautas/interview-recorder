@@ -39,13 +39,15 @@ function init(){
     //inicializaciones dependientes de fileApi
     guias.initialize();
     entrevistas.initialize();
-    
+    recordApi.initialize();
+    mediaApi.initialize();
   });
 }
 
 var fileApi = {
   ready: false, // <--solo por las dudas
   initialize: function(callback){
+    uglyLog('en fileApi');
     var path = cordova.file.externalDataDirectory;
     //si no hay problemas, llamamos a callback con el primer
     //parametro en null (lo que seria el error)
@@ -96,6 +98,9 @@ var guias = {
       }
       if(contents) {
         guias.lista = JSON.parse(contents);
+      }else{
+        guias.lista.push(crearGuia());
+        guias.guardarGuias();
       }
       guias.ready = true;
       guias.lista.push(crearGuia());
@@ -176,7 +181,251 @@ var entrevistas = {
     fileApi.dir.getFile('entrevistas.json', {create:true}, onFile, onError);
   }
 }
+var recordApi = {
+  initialize: function(callback){
+     uglyLog('en recordApi');
+    //referencia al boton
+    recordApi.button = $('#record');
 
+    //referencia al reloj
+    recordApi.clock = $('#record-time');
+
+    //inicializar estado
+    recordApi.isRecording = false;
+
+    //inicializar variable para el timer
+    recordApi.timer = null;
+
+    //referencia al directorio "audio"
+    fileApi.getDir('audio', function(err, dir){
+      if(err) {
+        console.log(err);
+        return;
+      }
+      recordApi.audioDir = dir;
+      callback && callback();
+    });
+  },
+  nuevaGrabacion: function(guiaId, callback){
+    var fileName = guid();
+    var onError = function(err) {
+      callback && callback(err, null);
+    }
+    var onFile = function(fileEntry) {
+      recordApi.entrevista = {
+        id: fileName,
+        audioPath: fileEntry.nativeURL,
+        interview: guiaId,
+        start: null,
+        stop: null,
+        tags: []
+      };
+      recordApi.recordFile = fileEntry.nativeURL;
+      callback && callback(null, fileEntry);
+    }
+    recordApi.audioDir.getFile(fileName, {create:true}, onFile, onError);
+  },
+  createTagButton: function(ref) {
+    var button = $('<button />')
+      .addClass("ui-btn ui-btn-inline ui-mini")
+      .text('+')
+      .click(function(e){
+        if(!recordApi.isRecording) {
+          return;
+        }
+        console.log('tag ' + ref + ' @ ' + new Date());
+        recordApi.entrevista.tags.push({ref: ref, time: new Date()});
+      });
+    return button;
+  },
+  updateClock: function(){
+    var recordTime = ((new Date() - recordApi.entrevista.start) / 1000) << 0;
+    recordApi.clock.text(clockFormat(recordTime));
+  },
+  record: function(){
+    recordApi.media = new Media(recordApi.recordFile, recordApi.onStop, recordApi.onError, recordApi.onStatus);
+    recordApi.media.startRecord();
+  },
+  stop: function(){
+    recordApi.media.stopRecord();
+  },
+  onStop: function(){
+    console.log('recordApi.onStop');
+    recordApi.media.release();
+    recordApi.media = null;
+    recordApi.entrevista.stop = new Date();
+    entrevistas.agregar(recordApi.entrevista, function(entrevista){
+      $('#revision').data('entrevistaIdx',entrevistas.lista.length - 1);
+      $(':mobile-pagecontainer').pagecontainer('change','#revision');
+    });
+    // mediaApi.load(recordApi.recordFile);
+  },
+  onError: function(err){
+    console.log('Recording error');
+    console.log(err);
+  },
+  onStatus: function(status){
+    switch(status) {
+      case Media.MEDIA_NONE: console.log('Status change: idle');
+      break;
+      case Media.MEDIA_STARTING:
+        console.log('Status change: starting');
+      break;
+      case Media.MEDIA_RUNNING:
+        console.log('Status change: running');
+        recordApi.timer = setInterval(recordApi.updateClock,500);
+        recordApi.isRecording = true;
+        recordApi.entrevista.start = new Date();
+        recordApi.button.css('background-color','red');
+        recordApi.button.text('Detener');
+        $.mobile.loading('hide');
+      break;
+      case Media.MEDIA_PAUSED: console.log('Status change: paused');
+      break;
+      case Media.MEDIA_STOPPED:
+        console.log('Status change: stopped');
+        clearInterval(recordApi.timer);
+        recordApi.timer = null;
+        recordApi.isRecording = false;
+        recordApi.button.css('background-color', '#333');
+        recordApi.button.text('Grabar');
+      break;
+      default: console.log('unknown status');
+    }
+  }
+}
+var mediaApi = {
+  playTime: 0,
+  initialize: function() {
+    uglyLog('en mediaApi');
+    //inicializacion de estado de reproduccion
+    mediaApi.isPlaying = false;
+
+    //initialize with load
+    // mediaApi.load('/android_asset/www/intro.mp3');
+  },
+  pausa: function() {
+    if(!mediaApi.isPlaying) {
+      return;
+    }
+    clearInterval(mediaApi.interval);
+    mediaApi.interval = null;
+    mediaApi.isPlaying = false;
+    mediaApi.audio.pause();
+  },
+  play: function() {
+    if(mediaApi.isPlaying || !mediaApi.audio) {
+      return;
+    }
+    mediaApi.interval = setInterval(function(){
+      mediaApi.audio.getCurrentPosition(function(t){
+        mediaApi.playTime = t;
+        mediaApi.currentTime.text( clockFormat(t) );
+      });
+    },500);
+    mediaApi.isPlaying = true;
+    mediaApi.audio.play();
+  },
+  createTagButton: function(ref) {
+    var button = $('<button />')
+      .addClass("ui-btn ui-btn-inline ui-mini")
+      .text('+')
+      .click(function(e){
+        var d = new Date(mediaApi.entrevista.start);
+        d.setSeconds(d.getSeconds() + mediaApi.playTime);
+        mediaApi.entrevista.tags.push({ref: ref, time: d});
+      });
+    return button;
+  },
+  onSuccess: function(){
+    if(mediaApi.interval) {
+      clearInterval(mediaApi.interval);
+      mediaApi.currentTime.text("00:00");
+      mediaApi.interval = null;
+      mediaApi.isPlaying = false;
+    }
+    console.log('media stop/played/rec success');
+  },
+  load: function(entrevistaId) {
+    if(mediaApi.isPlaying) {
+      mediaApi.pausa();
+    }
+    if(mediaApi.audio) {
+      mediaApi.audio.release();
+    }
+    mediaApi.entrevista = entrevistas.lista[entrevistaId];
+    mediaApi.audio = new Media(mediaApi.entrevista.audioPath, mediaApi.onSuccess, mediaApi.onError, mediaApi.onStatus);
+    //fake play
+    mediaApi.audio.play();
+    console.log('audio file loaded');
+  },
+  onStatus: function(status) {
+    switch(status) {
+      case Media.MEDIA_NONE: console.log('Status change: idle');
+      break;
+      case Media.MEDIA_STARTING:
+        console.log('Status change: starting');
+      break;
+      case Media.MEDIA_RUNNING:
+        console.log('Status change: running');
+        if(!mediaApi.audio.initialized) {
+          mediaApi.audio.getCurrentPosition(function(){
+            console.log(mediaApi.audio._duration);
+            mediaApi.totalTime.text( clockFormat(mediaApi.audio._duration) );
+            mediaApi.audio.stop();
+            mediaApi.audio.initialized = true;
+          });
+        }
+      break;
+      case Media.MEDIA_PAUSED: console.log('Status change: paused');
+      break;
+      case Media.MEDIA_STOPPED: console.log('Status change: stopped');
+      break;
+      default: console.log('unknown status');
+    }
+  },
+  onError: function(err) {
+    console.log('Error');
+    console.log(err);
+  }
+}
+
+function crearGuia() {
+  var entrevista = {
+    nombre: 'Curso Phonegap',
+    id: guid(),
+    preguntas: {
+      1: "Preséntese y cuénteme por qué quiere hacer el curso de Phonegap",
+      2: "Nombre",
+      3: "Edad",
+      4: "Conocimientos previos",
+      5: "Experiencia en mobile",
+      6: "Experiencia general"
+    }
+  };
+  return entrevista;
+}
+
+function clockFormat(secs) {
+  secs = secs << 0;
+  var minutes = (secs / 60) << 0;
+  var seconds = secs % 60;
+  minutes = minutes < 10 ? "0"+minutes : minutes;
+  seconds = seconds < 10 ? "0"+seconds : seconds;
+  return minutes+":"+seconds;
+}
+
+function guid() {
+  function s4() {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+  }
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+    s4() + '-' + s4() + s4() + s4();
+}
+
+/*
 function crearGuia() {
   var guia = {
     nombre: 'Curso Phonegap',
@@ -192,7 +441,7 @@ function crearGuia() {
   return guia;
 }
 
-/*
+
 function crearEntrevista(){
   var entrevista = {
     interview: 34,
@@ -479,17 +728,28 @@ var recordApi = {
   },
 }  
 */
+
 function uglyLog(message){
-    var div=document.getElementById('uglyLog');
-    if(!div){
-        div=document.createElement('div');
-        div.id='uglyLog';
-        document.body.appendChild(div);
+    console.log(message);
+    if($){
+        $('[data-role=footer]').append(
+            $('<p>').text(message).addClass('uglylog').click(function(){
+                $('.uglylog').remove();
+            })
+        );
+    }else{
+        var div=document.getElementById('uglyLog');
+        if(!div){
+            div=document.createElement('div');
+            div.id='uglyLog';
+            document.body.appendChild(div);
+        }
+        div.textContent=(div.textContent||'') + message+'. ';
+        return div;
     }
-    div.textContent=(div.textContent||'') + message+'. ';
-    return div;
 }
 
 window.addEventListener('error',function(e){
-    uglyLog(e.message || ''+e).textContent+=e.stack;
+    uglyLog(e.message || ''+e)
+    uglyLog(''+e.stack);
 });
