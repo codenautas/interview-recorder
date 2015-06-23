@@ -19,7 +19,6 @@ $(document).ready(function(){
 $.when(jqmReady,documentReady, deviceReady).then(init);
 
 function init(){
-  console.log('init');
   // Configuracion de JQM para phonegap
   $.mobile.allowCrossDomainPages = true;
   $.support.cors = true;
@@ -29,8 +28,7 @@ function init(){
 
   fileApi.initialize(function(err){
     if(err) { // <-- checkeamos si hay error
-      uglyLog('file api error');
-      uglyLog(err);
+      uglyError('file api error',err);
       return; // <-- y cortamos la ejecucion de ser asi
     }
 
@@ -39,6 +37,7 @@ function init(){
     guias.initialize();
     entrevistas.initialize();
     recordApi.initialize();
+    mediaApi.initialize();
   });
 }
 
@@ -71,7 +70,7 @@ var fileApi = {
     fileApi.dir.getFile(file, {create: true}, onFile, fileApi.onError);
   },
   onError: function(err) {
-    console.log(err);
+    uglyError('fileApi',err);
   },
   getDir: function(dir, callback) {
     var onDir = function(dir){
@@ -90,14 +89,13 @@ var guias = {
   initialize: function(){
     guias.obtenerGuias(function(err, contents){
       if(err) {
-        console.log('Error obteniendo el archivo de guias');
+        uglyError('Error obteniendo el archivo de guias',err);
         guias.lista = [];
       }
       if(contents) {
         guias.lista = JSON.parse(contents);
       }
       guias.ready = true;
-      uglyLog('guias inicializadas');
     });
   },
   guardarGuias: function(callback){
@@ -132,7 +130,7 @@ var entrevistas = {
   initialize: function(){
     entrevistas.obtenerEntrevistas(function(err, contents){
       if(err) {
-        console.log('Error obteniendo el archivo de entrevistas');
+        uglyError('Error obteniendo el archivo de entrevistas',err);
         entrevistas.lista = [];
       }
       if(contents) {
@@ -140,12 +138,11 @@ var entrevistas = {
       }
       entrevistas.ready = true;
     });
-    uglyLog('entrevistas inicializadas');
   },
   agregar: function(entrevista, callback) {
     entrevistas.lista.push(entrevista);
     entrevistas.guardarEntrevistas(function(){
-      console.log('entrevista agregada y guardada');
+      uglyLog('entrevista agregada y guardada');
       callback && callback(entrevista);
     });
   },
@@ -224,7 +221,6 @@ function crearEntrevista(){
 
 var recordApi = {
   initialize: function(callback){
-    uglyLog('recordApi, inicializando');
     //referencia al boton
     recordApi.button = $('#record');
 
@@ -240,15 +236,13 @@ var recordApi = {
     //referencia al directorio "audio"
     fileApi.getDir('audio', function(err, dir){
       if(err) {
-        console.log(err);
+        uglyError('filApi.getDir',err);
         return;
       }
       recordApi.audioDir = dir;
-      uglyLog('recordApi por llamar al callback');
       callback && callback();
+      uglyLog('recordApi. iniciado');
     });
-    
-    uglyLog('recordApi, inicializado');
   },
   nuevaGrabacion: function(guiaId, callback){
     var fileName = guid();
@@ -305,8 +299,7 @@ var recordApi = {
     // mediaApi.load(recordApi.recordFile);
   },
   onError: function(err){
-    console.log('Recording error');
-    console.log(err);
+    uglyError('Recording error',err);
   },
   onStatus: function(status){
     switch(status) {
@@ -396,55 +389,85 @@ function createSeekButton(time){
   });
   
 var mediaApi = {
-  pathToPlay: 'media stop/played/rec success',
+  playTime: 0,
   initialize: function() {
-    //asignamos una instancia de Media a mediaApi.audio
-    mediaApi.audio = new Media('/android_asset/www/intro.mp3', mediaApi.onSuccess, mediaApi.onError, mediaApi.onStatus);
-
-    //inicializacion de botones
-    $('#play').click(function(e) {
-      e.preventDefault();
-      mediaApi.play();
-    });
-
-    $('#pause').click(function(e){
-      e.preventDefault();
-      mediaApi.pausa();
-    });    
-
-    //inicializacion de indicadores de tiempo
-    mediaApi.currentTime = $('#currentTime').text(0);
-    mediaApi.totalTime = $('#totalTime').text(0);
-
     //inicializacion de estado de reproduccion
     mediaApi.isPlaying = false;
 
-    mediaApi.load('/android_asset/www/schuman.mp3');
+    //initialize with load
+    // mediaApi.load('/android_asset/www/intro.mp3');
+    uglyLog('mediaApi ini');
   },
-  //a partir de aca son los handlers/calllbacks
-  //de success, status y error.
-  onSuccess: function(){
-    if(mediaApi.interval) { // <-- check
-      clearInterval(mediaApi.interval); // <-- clear
-      // mediaApi.currentTime.text(0); // <-- reset
-      mediaApi.interval = null; // <-- reset
-      mediaApi.isPlaying = false; // <-- switch
+  pausa: function() {
+    if(!mediaApi.isPlaying) {
+      return;
     }
-    console.log(mediaApi.pathToPlay);
-  },  
+    clearInterval(mediaApi.interval);
+    mediaApi.interval = null;
+    mediaApi.isPlaying = false;
+    mediaApi.audio.pause();
+  },
+  play: function() {
+    if(mediaApi.isPlaying || !mediaApi.audio) {
+      return;
+    }
+    mediaApi.interval = setInterval(function(){
+      mediaApi.audio.getCurrentPosition(function(t){
+        mediaApi.playTime = t;
+        mediaApi.currentTime.text( clockFormat(t) );
+      });
+    },500);
+    mediaApi.isPlaying = true;
+    mediaApi.audio.play();
+  },
+  createTagButton: function(ref) {
+    var button = $('<button />')
+      .addClass("ui-btn ui-btn-inline ui-mini")
+      .text('+')
+      .click(function(e){
+        var d = new Date(mediaApi.entrevista.start);
+        d.setSeconds(d.getSeconds() + mediaApi.playTime);
+        mediaApi.entrevista.tags.push({ref: ref, time: d});
+      });
+    return button;
+  },
+  onSuccess: function(){
+    if(mediaApi.interval) {
+      clearInterval(mediaApi.interval);
+      mediaApi.currentTime.text("00:00");
+      mediaApi.interval = null;
+      mediaApi.isPlaying = false;
+    }
+    console.log('media stop/played/rec success');
+  },
+  load: function(entrevistaId) {
+    if(mediaApi.isPlaying) {
+      mediaApi.pausa();
+    }
+    if(mediaApi.audio) {
+      mediaApi.audio.release();
+    }
+    mediaApi.entrevista = entrevistas.lista[entrevistaId];
+    mediaApi.audio = new Media(mediaApi.entrevista.audioPath, mediaApi.onSuccess, mediaApi.onError, mediaApi.onStatus);
+    //fake play
+    mediaApi.audio.play();
+    console.log('audio file loaded');
+  },
   onStatus: function(status) {
     switch(status) {
       case Media.MEDIA_NONE: console.log('Status change: idle');
       break;
-      case Media.MEDIA_STARTING: console.log('Status change: starting');
+      case Media.MEDIA_STARTING:
+        console.log('Status change: starting');
       break;
       case Media.MEDIA_RUNNING:
         console.log('Status change: running');
-        if(!mediaApi.audio.initialized) { // <-- check!
+        if(!mediaApi.audio.initialized) {
           mediaApi.audio.getCurrentPosition(function(){
             console.log(mediaApi.audio._duration);
-            mediaApi.audio.stop(); // <-- STOP!
-            mediaApi.audio.initialized = true; // <-- switch
+            mediaApi.totalTime.text( clockFormat(mediaApi.audio._duration) );
+            mediaApi.audio.stop();
+            mediaApi.audio.initialized = true;
           });
         }
       break;
@@ -456,64 +479,9 @@ var mediaApi = {
     }
   },
   onError: function(err) {
-    console.log('Error');
-    console.log(err);
-  },
-  play: function() {
-    if(mediaApi.isPlaying) {
-      return;
-    }
-    if(mediaApi.interval){
-      clearInterval(mediaApi.interval);  
-      mediaApi.interval=null;
-    }
-    mediaApi.interval = setInterval(function(){
-      mediaApi.audio.getCurrentPosition(function(t){
-        mediaApi.currentTime.text(t.toFixed(2));
-      });
-    },100);
-    mediaApi.isPlaying = true;
-    mediaApi.audio.play();
-  },
-  pausa: function() {
-    if(!mediaApi.isPlaying) {
-      return;
-    }
-    if(mediaApi.interval){
-        clearInterval(mediaApi.interval);
-        mediaApi.interval=null;
-    }
-    mediaApi.isPlaying = false;
-    mediaApi.audio.pause();
-  },
-  load: function(path) {
-    if(mediaApi.isPlaying) { // <-- check
-      mediaApi.pausa();
-    }
-    if(mediaApi.audio) { // <-- check
-      mediaApi.audio.release();
-    }
-    mediaApi.audio = new Media(path, mediaApi.onSuccess, mediaApi.onError, mediaApi.onStatus);
-    //falso play
-    mediaApi.interval2 = setInterval(function(){
-      var dur = mediaApi.audio.getDuration();
-      mediaApi.totalTime.text(dur.toFixed(2)+'...');
-      if(dur>0){
-          clearInterval(mediaApi.interval2);
-      }
-      mediaApi.audio.seekTo(100,function(){
-        var dur = mediaApi.audio.getDuration();
-        mediaApi.totalTime.text(dur.toFixed(2)+'.');
-        mediaApi.currentTime.text(t.toFixed(2));
-        if(dur>0){
-            clearInterval(mediaApi.interval2);
-            mediaApi.audio.seekTo(0);
-        }
-      });
-    },1000);
-    console.log('audio file loaded');
-  },
-}
+    uglyError('mediaApi.Error',err);
+  }
+};
 
 function getRecordFile(callback){ // <-- recibimos una func como parametro
   var root = cordova.file.externalDataDirectory;
@@ -566,7 +534,12 @@ function uglyLog(message){
     }
 }
 
-window.addEventListener('error',function(e){
-    uglyLog(e.message || ''+e)
-    uglyLog(''+e.stack);
+function uglyError(modulo,err){
+    uglyLog(modulo);
+    uglyLog(err.message || err);
+    uglyLog(err.stack);
+}
+
+window.addEventListener('error',function(err){
+    uglyError('Error no capturado')
 });
