@@ -389,7 +389,126 @@ var mediaApi = {
     console.log(err);
   }
 }
+$('#guia-list').on('pageshow', function(e, pages){
+  console.log('pageshow en guia-list');
+  var container = $('#guias', pages.toPage);
+  container.empty();
+  $.each(guias.lista, function(i,e){
+    var stringData = JSON.stringify(e);
+    var li = $('<li />').appendTo(container);
+    var a = $('<a />')
+      .attr('href','#interview')
+      .data('guia',e)
+      .text(e.nombre)
+      .appendTo(li)
+      .click(function(evt){
+        evt.preventDefault();
+        $('#interview').data('guia',e);
+        $(':mobile-pagecontainer').pagecontainer('change','#interview');
+      });
+  });
+  container.listview('refresh');
+});
 
+$('#entrevista-list').on('pageshow', function(e, pages){
+  console.log('pageshow en entrevista-list');
+  var container = $('#entrevistas', pages.toPage);
+  container.empty();
+  $.each(entrevistas.lista, function(i,e){
+    var stringData = JSON.stringify(e);
+    var li = $('<li />').appendTo(container);
+    var a = $('<a />')
+      .attr('href','#revision')
+      .text(e.id)
+      .appendTo(li)
+      .click(function(evt){
+        evt.preventDefault();
+        //esta vez pasamos el indice de la entrevista
+        $('#revision').data('entrevistaIdx',i);
+        $(':mobile-pagecontainer').pagecontainer('change','#revision');
+      });
+  });
+  container.listview('refresh');
+});
+
+$('#interview').on('pagecreate', function(){
+  console.log('pagecreate on interview');
+
+  $('#record').click(function(e){
+    e.preventDefault();
+    if(recordApi.isRecording) {
+      recordApi.stop();
+    }else{
+      recordApi.record();
+    }
+  });
+});
+$('#interview').on('pageshow', function(e, pages){
+  // console.log(e);
+  // console.log(pages);
+  console.log('pageshow on interview');
+  var guia = pages.toPage.data('guia');
+  var container = $('#guia', pages.toPage);
+  container.empty();
+  recordApi.nuevaGrabacion(guia.id, function(){
+    $.each(guia.preguntas, function(i,e){
+      var div = $('<div class="respuesta" />');
+      div.append(recordApi.createTagButton(i));
+      div.append(e.texto);
+
+      container.append(div);
+    });
+  });
+});
+
+$('#revision').on('pagecreate', function(){
+  console.log('pagecreate on revision');
+
+  //inicializacion de botones
+  $('#play').click(function(e) {
+    e.preventDefault();
+    mediaApi.play();
+  });
+
+  $('#pausa').click(function(e){
+    e.preventDefault();
+    mediaApi.pausa();
+  });
+
+  //inicializacion de indicadores de tiempo
+  mediaApi.currentTime = $('#currentTime').text("00:00");
+  mediaApi.totalTime = $('#totalTime').text(0);
+});
+$('#revision').on('pageshow', function(e, pages){
+  console.log('pageshow en #revision');
+
+  // var entrevista = crearEntrevista(); <-- asi lo teniamos antes
+  var entrevista = entrevistas.lista[pages.toPage.data('entrevistaIdx')];
+  var guia = guias.lista.filter(function(g){
+    return g.id == entrevista.interview;
+  })[0];
+  var container = $('div#respuestas', pages.toPage);
+  container.empty();
+  mediaApi.load(pages.toPage.data('entrevistaIdx'));
+  $.each(guia.preguntas, function(i,e){
+    var div = $('<div class="respuesta" />');
+    div.append(mediaApi.createTagButton(i));
+    div.append(e.texto);
+
+    var tags = entrevista.tags.filter(function(tag){
+      return tag.ref == i;
+    });
+
+    $.each(tags, function(ii,ee){
+      div.append( createSeekButton(ee.time) );
+    });
+
+    container.append(div);
+  });
+});
+
+
+/*
 function crearGuia() {
   var entrevista = {
     nombre: 'Curso Phonegap',
@@ -404,6 +523,22 @@ function crearGuia() {
     }
   };
   return entrevista;
+}
+*/
+function crearGuia() {
+  var guia = {
+    nombre: 'Curso Phonegap',
+    id: guid(),
+    preguntas: {
+      1: {texto: "Preséntese y cuénteme por qué quiere hacer el curso de Phonegap"},
+      2: {texto: "Nombre"},
+      3: {texto: "Edad"},
+      4: {texto: "Conocimientos previos"},
+      5: {texto: "Experiencia en mobile"},
+      6: {texto: "Experiencia general"}
+    }
+  };
+  return guia;
 }
 
 function clockFormat(secs) {
@@ -423,6 +558,15 @@ function guid() {
   }
   return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
     s4() + '-' + s4() + s4() + s4();
+}
+
+function createSeekButton(time){
+  var button = $('<button />')
+    .text('Go!')
+    .click(function(e){
+      console.log('reproducir desde '+time);
+    });
+  return button;
 }
 
 /*
