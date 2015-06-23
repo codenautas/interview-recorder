@@ -10,33 +10,153 @@
     <title>Plugin Dashboard</title>
   </head>
   <body>
-
     <div data-role="page" id="home">
       <div data-role="header">
         <h1>Interview Recorder</h1>
       </div>
+
       <div data-role="content">
-        <div style="text-align:left">
-          <div id=main_buttons>
-            <button id="rec"   data-inline="true" x-xdisabled>Rec</button> 
-            <button id="play"  data-inline="true">Play</button> 
-            <button id="pause" data-inline="true">Pause</button> 
-            <button id="rew10" data-inline="true">&#x21ba;</button> 
-            <span id=currentTime>00:00</span>
-            <span id=totalTime>00:00</span>
-          </div>
-          <div id="guia">
-          </div>
-        </div>
-        <div id=uglyLog>
-        </div>
+        <a href="#entrevista-list" class="ui-btn ui-btn-inline">Archivo de entrevistas</a>
+        <br />
+        <a href="#guia-list" class="ui-btn ui-btn-inline">Entrevistar</a>
       </div>
+
       <div data-role="footer" data-position="fixed">
-
-
+        <div data-role="content">home</div>
       </div>
     </div>
+    
+    <!-- PAGINA LISTADO ENTREVISTAS -->
+    <div data-role="page" id="entrevista-list">
+      <div data-role="header">
+        <a href="#home" data-role="back" class="ui-nodisc-icon ui-alt-icon ui-btn ui-shadow ui-corner-all ui-icon-arrow-l ui-btn-icon-notext ui-btn-inline"></a>
+        <h1>Entrevistas</h1>
+      </div>
 
+      <div data-role="content">
+        <ul id="entrevistas" data-role="listview" class="ui-listview">
+          <li><a href="#revision" data-entrevista="ttt">Entrevista 1</a></li>
+          <li><a href="#revision" data-entrevista="ddd">Entrevista 2</a></li>
+        </ul>
+      </div>
+
+      <div data-role="footer" data-position="fixed">
+        <div data-role="content">entrevistas</div>
+      </div>
+
+    </div>
+    <!-- /PAGINA LISTADO ENTREVISTAS -->
+    
+    <!-- PAGINA LISTADO GUIAS para entrevistar--> 
+    <div data-role="page" id="guia-list">
+      <div data-role="header">
+        <a href="#home" data-role="back" class="ui-nodisc-icon ui-alt-icon ui-btn ui-shadow ui-corner-all ui-icon-arrow-l ui-btn-icon-notext ui-btn-inline"></a>
+        <h1>Guias</h1>
+        <a href="#nueva-guia" class="ui-nodisc-icon ui-alt-icon ui-btn ui-shadow ui-corner-all ui-icon-plus ui-btn-icon-notext ui-btn-inline"></a>
+      </div>
+
+      <div data-role="content">
+        <ul id="guias" data-role="listview" class="ui-listview">
+          <li><a href="#interview" data-entrevista="ttt">Curso Phonegap</a></li>
+          <li><a href="#interview" data-entrevista="ddd">Vacante F3</a></li>
+        </ul>
+      </div>
+
+      <div data-role="footer" data-position="fixed">
+        <div data-role="content">guias</div>
+      </div>
+
+    </div>
+    <!-- /PAGINA LISTADO GUIAS --> 
+
+<!-- PAGINA REVIEW -->
+<div data-role="page" id="revision">
+  <div data-role="header">
+    <a href="#home" data-role="back" class="ui-nodisc-icon ui-alt-icon ui-btn ui-shadow ui-corner-all ui-icon-arrow-l ui-btn-icon-notext ui-btn-inline"></a>
+    <h1>Revision</h1>
+  </div>
+
+  <div data-role="content">
+
+    <div>
+      <button id="play" class="ui-btn ui-btn-inline ui-mini">Play</button>
+      <button id="pausa" class="ui-btn ui-btn-inline ui-mini">Pausa</button>
+      <button id="stop" class="ui-btn ui-btn-inline ui-mini">Stop</button>
+      <button id="backTen" class="ui-btn ui-btn-inline ui-mini">Rew 10"</button>
+      <button id="currentTime" class="ui-btn ui-btn-inline ui-mini ui-btn-b">00:00</button>
+    </div>
+
+    <div id="respuestas">
+      <div>
+        <button class="ui-btn ui-btn-inline ui-mini">+</button>
+        Preséntese y cuénteme por qué quiere hacer el curso de Phonegap
+        <button class="ui-btn ui-btn-inline ui-mini">Go!</button>
+      </div>
+      <div>
+        <button class="ui-btn ui-btn-inline ui-mini">+</button>
+        Nombre
+        <button class="ui-btn ui-btn-inline ui-mini">Go!</button>
+        <button class="ui-btn ui-btn-inline ui-mini">Go!</button>
+      </div>
+      <div>
+        <button class="ui-btn ui-btn-inline ui-mini">+</button>
+        Edad
+        <button class="ui-btn ui-btn-inline ui-mini">Go!</button>
+      </div>
+    </div>
+  </div>
+
+  <div data-role="footer" data-position="fixed">
+    <div data-role="content">revision</div>
+  </div>
+
+</div>
+<!-- /PAGINA REVIEW -->
+
+!-- PAGINA INTERVIEW -->
+<div data-role="page" id="interview">
+  <div data-role="header">
+    <a href="#home" data-role="back" class="ui-nodisc-icon ui-alt-icon ui-btn ui-shadow ui-corner-all ui-icon-arrow-l ui-btn-icon-notext ui-btn-inline"></a>
+    <h1>Entrevista</h1>
+  </div>
+
+  <div data-role="content">
+
+    <div>
+      <button id="record" class="ui-btn ui-btn-inline ui-icon-power">Grabar</button>
+      <!-- <button id="record-stop" class="ui-btn ui-btn-inline ui-mini">Stop</button> -->
+      <button id="record-time" class="ui-btn ui-btn-inline ui-btn-b">00:00</button>
+    </div>
+
+    <div id="guia">
+    </div>
+
+  </div>
+
+  <div data-role="footer" data-position="fixed">
+    <div data-role="content">interview</div>
+  </div>
+
+</div>
+<!-- /PAGINA INTERVIEW -->
+
+!-- PAGINA FORM NUEVA GUIA ... OJO! -->
+<div data-role="page" id="nueva-guia">
+  <div data-role="header">
+    <a href="#home" data-role="back" class="ui-nodisc-icon ui-alt-icon ui-btn ui-shadow ui-corner-all ui-icon-arrow-l ui-btn-icon-notext ui-btn-inline"></a>
+    <h1>Nueva guia</h1>
+  </div>
+
+  <div data-role="content">
+    Aca va el form para nueva guia
+  </div>
+
+  <div data-role="footer" data-position="fixed">
+    <div data-role="content">?</div>
+  </div>
+
+</div>
+<!-- /PAGINA FORM NUEVA GUIA -->   
 
     <script type="text/javascript" src="cordova.js"></script>
     <script type="text/javascript" src="js/jquery.min.js"></script>
