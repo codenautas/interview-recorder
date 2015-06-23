@@ -387,7 +387,11 @@ var recordApi = {
 function uglyLog(message){
     console.log(message);
     if($){
-        $('[data-role=footer]').append($('<p>').text(message));
+        $('[data-role=footer]').append(
+            $('<p>').text(message).click(function(){
+                $(this).remove();
+            })
+        );
     }else{
         var div=document.getElementById('uglyLog');
         if(!div){
