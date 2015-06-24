@@ -45,6 +45,7 @@ function init(){
 function crearGuia() {
   var guia = {
     nombre: 'Curso Phonegap',
+    id: guid(),
     preguntas: {
       1: {texto: "Preséntese y cuénteme por qué quiere hacer el curso de Phonegap"},
       2: {texto: "Nombre"},
@@ -210,6 +211,25 @@ var entrevistas = {
     }
     fileApi.dir.getFile('entrevistas.json', {create:true}, onFile, onError);
   }
+};
+
+function clockFormat(secs) {
+  secs = secs << 0;
+  var minutes = (secs / 60) << 0;
+  var seconds = secs % 60;
+  minutes = minutes < 10 ? "0"+minutes : minutes;
+  seconds = seconds < 10 ? "0"+seconds : seconds;
+  return minutes+":"+seconds;
+};
+
+function guid() {
+  function s4() {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+  }
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+    s4() + '-' + s4() + s4() + s4();
 };
 
 var recordApi = {
