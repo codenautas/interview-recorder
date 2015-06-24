@@ -85,7 +85,7 @@ var fileApi = {
 
 var guias = {
   lista: [], // <-- array para tener la lista de guias a mano
-  ready: false,
+  ready: false, 
   initialize: function(){
     guias.obtenerGuias(function(err, contents){
       if(err) {
@@ -94,6 +94,9 @@ var guias = {
       }
       if(contents) {
         guias.lista = JSON.parse(contents);
+      }else{
+        guias.lista.push(crearGuia());
+        guias.guardarGuias(function(){console.log('se guardaron las guias')});
       }
       guias.ready = true;
     });
