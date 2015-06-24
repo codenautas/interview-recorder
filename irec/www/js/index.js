@@ -29,16 +29,31 @@ function init(){
   $.mobile.pushStateEnabled = false;
   $.mobile.defaultPageTransition = "none";
 
-  fileApi.initialize(function(err){
-    if(err) { // <-- checkeamos si hay error
+  fileApi.initialize(function(err, apiRef){
+    if(err) {
       console.log('file api error');
       console.log(err);
-      return; // <-- y cortamos la ejecucion de ser asi
+      return;
     }
 
-    // aca va mas codigo de inicializacion
-    // sabiendo que fileApi esta inicializado
+    //inicializaciones dependientes de fileApi
+    guias.initialize();
   });
+}
+
+function crearGuia() {
+  var guia = {
+    nombre: 'Curso Phonegap',
+    preguntas: {
+      1: {texto: "Preséntese y cuénteme por qué quiere hacer el curso de Phonegap"},
+      2: {texto: "Nombre"},
+      3: {texto: "Edad"},
+      4: {texto: "Conocimientos previos"},
+      5: {texto: "Experiencia en mobile"},
+      6: {texto: "Experiencia general"}
+    }
+  };
+  return guia;
 }
 
 function uglyLog(message){
