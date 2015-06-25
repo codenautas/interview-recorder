@@ -39,6 +39,8 @@ function init(){
     //inicializaciones dependientes de fileApi
     guias.initialize();
     entrevistas.initialize();
+    recordApi.initialize();
+    mediaApi.initialize();
   });
 }
 
@@ -85,7 +87,9 @@ window.addEventListener('error',function(e){
 var fileApi = {
   ready: false, // <--solo por las dudas
   initialize: function(callback){
-    var path = cordova.file.externalDataDirectory;
+    console.log('fileApi.initializa path: ');
+    var path = cordova.file.dataDirectory;
+    console.log(path);
     //si no hay problemas, llamamos a callback con el primer
     //parametro en null (lo que seria el error)
     var onResolve = function(directoryEntry) {
@@ -101,6 +105,7 @@ var fileApi = {
     window.resolveLocalFileSystemURL(path, onResolve, onError);
   },
   writeTextFile: function(file, content, callback) {
+    console.log('writeText');
     var onFile = function(fileEntry) {
       fileEntry.createWriter(
         function(fileWriter){
@@ -135,11 +140,15 @@ var guias = {
       }
       if(contents) {
         guias.lista = JSON.parse(contents);
+      }else{
+        guias.lista.push(crearGuia());
+        guias.guardarGuias(function(){console.log('se guardaron las guias')});
       }
       guias.ready = true;
     });
   },
   guardarGuias: function(callback){
+    console.log('guardarGuias');
     var guiasEnTexto = JSON.stringify(guias.lista);
     fileApi.writeTextFile('guias.json', guiasEnTexto, function(){
       callback && callback();
@@ -557,4 +566,10 @@ $('#revision').on('pageshow', function(e, pages){
 
     container.append(div);
   });
+});
+$('#nueva-guia').on('pagecreate', function(){
+  console.log('pagecreate on nueva-guia');
+  console.log(JSON.stringify(crearGuia()));
+  guias.lista.push(crearGuia());
+  guias.guardarGuias(function(){console.log('se guardaron las guias')})
 });
