@@ -100,12 +100,9 @@ var guias = {
         guias.lista = JSON.parse(contents);
       }else{
         guias.lista.push(crearGuia());
-        guias.guardarGuias();
+        guias.guardarGuias(function(){console.log('se guardaron las guias')});
       }
       guias.ready = true;
-      guias.lista.push(crearGuia());
-      guias.guardarGuias(function(){console.log('se guardaron las guias')})
-
     });
   },
   guardarGuias: function(callback){
