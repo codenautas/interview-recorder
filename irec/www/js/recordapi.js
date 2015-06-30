@@ -31,6 +31,7 @@ var recordApi = {
     var onFile = function(fileEntry) {
       recordApi.entrevista = {
         id: fileName,
+        nombre: $('#titulo-entrevista').text(), // <--
         audioPath: fileEntry.nativeURL,
         interview: guiaId,
         start: null,
@@ -42,6 +43,13 @@ var recordApi = {
     }
     recordApi.audioDir.getFile(fileName, {create:true}, onFile, onError);
   },
+  tildeContestado: function(){
+    var mark = $('<div />')
+      .addClass("ui-input-btn ui-btn ui-btn-inline ui-icon-check ui-btn-icon-notext ui-corner-all")
+      .css("float","right")
+      .text(" ");
+    return mark;
+  },  
   createTagButton: function(ref) {
     var button = $('<button />')
       .addClass("ui-btn ui-btn-inline ui-mini")
@@ -51,6 +59,7 @@ var recordApi = {
           return;
         }
         console.log('tag ' + ref + ' @ ' + new Date());
+        $(this).parent().append(recordApi.tildeContestado());
         recordApi.entrevista.tags.push({ref: ref, time: new Date()});
       });
     return button;
@@ -68,6 +77,7 @@ var recordApi = {
   },
   onStop: function(){
     console.log('recordApi.onStop');
+    $.mobile.loading('show');
     recordApi.media.release();
     recordApi.media = null;
     recordApi.entrevista.stop = new Date();
@@ -75,7 +85,6 @@ var recordApi = {
       $('#revision').data('entrevistaIdx',entrevistas.lista.length - 1);
       $(':mobile-pagecontainer').pagecontainer('change','#revision');
     });
-    // revisionApi.load(recordApi.recordFile);
   },
   onError: function(err){
     uglyError('Recording error',err);
