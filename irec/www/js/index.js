@@ -138,7 +138,7 @@ $('#interview').on('pageshow', function(e, pages){
     $.each(guia.preguntas, function(i,e){
       var div = $('<div class="respuesta" />');
       div.append(recordApi.createTagButton(i));
-      div.append(e);
+      div.append(e.texto);
 
       container.append(div);
     });
@@ -181,7 +181,7 @@ $('#revision').on('pageshow', function(e, pages){
   $.each(guia.preguntas, function(i,e){
     var div = $('<div class="respuesta" />');
     div.append(revisionApi.createTagButton(i));
-    div.append(e);
+    div.append(e.texto);
 
     var tags = entrevista.tags.filter(function(tag){
       return tag.ref == i;

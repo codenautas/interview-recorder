@@ -23,11 +23,11 @@ function crearGuia() {
     nombre: 'Ejemplo',
     id: guid(),
     preguntas: {
-      1: "Nombre",
-      2: "Edad",
-      3: "Sexo",
-      4: "Estado civil",
-      5: "Sobrenombre"
+      1: {texto: "Nombre"},
+      2: {texto: "Edad"},
+      3: {texto: "Sexo"},
+      4: {texto: "Estado civil"},
+      5: {texto: "Sobrenombre"}
     }
   };
   return guia;
