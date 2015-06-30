@@ -9,8 +9,8 @@ var recordApi = {
     //inicializar estado
     recordApi.isRecording = false;
 
-    //inicializar variable para el timer
-    recordApi.timer = null;
+    //inicializar variable para el interval
+    recordApi.interval = null;
 
     //referencia al directorio "audio"
     fileApi.getDir('audio', function(err, dir){
@@ -31,7 +31,7 @@ var recordApi = {
     var onFile = function(fileEntry) {
       recordApi.entrevista = {
         id: fileName,
-        nombre: $('#titulo-entrevista').text(), // <--
+        nombre: $('#titulo-entrevista').text(),
         audioPath: fileEntry.nativeURL,
         interview: guiaId,
         start: null,
@@ -49,7 +49,7 @@ var recordApi = {
       .css("float","right")
       .text(" ");
     return mark;
-  },  
+  },
   createTagButton: function(ref) {
     var button = $('<button />')
       .addClass("ui-btn ui-btn-inline ui-mini")
@@ -82,6 +82,7 @@ var recordApi = {
     recordApi.media = null;
     recordApi.entrevista.stop = new Date();
     entrevistas.agregar(recordApi.entrevista, function(entrevista){
+      //falta nombre de la revision
       $('#revision').data('entrevistaIdx',entrevistas.lista.length - 1);
       $(':mobile-pagecontainer').pagecontainer('change','#revision');
     });
@@ -98,7 +99,7 @@ var recordApi = {
       break;
       case Media.MEDIA_RUNNING:
         console.log('Status change: running');
-        recordApi.timer = setInterval(recordApi.updateClock,500);
+        recordApi.interval = setInterval(recordApi.updateClock,500);
         recordApi.isRecording = true;
         recordApi.entrevista.start = new Date();
         recordApi.button.css('background-color','red');
@@ -109,8 +110,8 @@ var recordApi = {
       break;
       case Media.MEDIA_STOPPED:
         console.log('Status change: stopped');
-        clearInterval(recordApi.timer);
-        recordApi.timer = null;
+        clearInterval(recordApi.interval);
+        recordApi.interval = null;
         recordApi.isRecording = false;
         recordApi.button.css('background-color', '#333');
         recordApi.button.text('Grabar');
@@ -118,4 +119,4 @@ var recordApi = {
       default: console.log('unknown status');
     }
   }
-};
+}
