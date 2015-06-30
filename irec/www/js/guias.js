@@ -1,5 +1,5 @@
 var guias = {
-  lista: [], // <-- array para tener la lista de guias a mano
+  lista: [],
   ready: false,
   initialize: function(){
     guias.obtenerGuias(function(err, contents){
@@ -18,8 +18,8 @@ var guias = {
   },
   guardarGuias: function(callback){
     var guiasEnTexto = JSON.stringify(guias.lista);
-    fileApi.writeTextFile('guias.json', guiasEnTexto, function(){
-      callback && callback();
+    fileApi.writeTextFile('guias.json', guiasEnTexto, function(content){
+      callback && callback(content);
     });
   },
   obtenerGuias: function(callback) {
@@ -27,10 +27,16 @@ var guias = {
       callback && callback(err, null);
     }
     var onFile = function(fileEntry) {
+      //convierte el fileEntry en un fileObject
       fileEntry.file(
         function(fileObject){
           var reader = new FileReader();
+          // reader.onerror = function(){
+          //   console.log('reader error');
+          //   console.log(arguments);
+          // }
           reader.onloadend = function(){
+            // console.log(this.result);
             callback && callback(null, this.result);
           }
           reader.readAsText(fileObject);
@@ -39,5 +45,11 @@ var guias = {
       );
     }
     fileApi.dir.getFile('guias.json', {create:true}, onFile, onError);
+  },
+  agregarGuia: function(guia, callback){
+    guias.lista.push(guia);
+    guias.guardarGuias(function(){
+      callback && callback();
+    });
   }
-};
+}
