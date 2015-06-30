@@ -35,7 +35,7 @@ function crearGuia() {
 
 function uglyLog(message){
     console.log(message);
-    if($){
+    if($ && $('[data-role=footer]')){
         $('[data-role=footer]').append(
             $('<p>').text(message).addClass('uglylog').click(function(){
                 $('.uglylog').remove();
@@ -57,3 +57,4 @@ function uglyError(modulo,err){
     uglyLog(modulo);
     uglyLog(err.message || err);
     uglyLog(err.stack);
+}

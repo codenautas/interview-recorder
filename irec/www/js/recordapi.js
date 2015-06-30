@@ -77,7 +77,7 @@ var recordApi = {
   },
   onStop: function(){
     console.log('recordApi.onStop');
-    $.mobile.loading('show');
+    if(PRODUC) $.mobile.loading('show');
     recordApi.media.release();
     recordApi.media = null;
     recordApi.entrevista.stop = new Date();
@@ -104,7 +104,7 @@ var recordApi = {
         recordApi.entrevista.start = new Date();
         recordApi.button.css('background-color','red');
         recordApi.button.text('Detener');
-        $.mobile.loading('hide');
+        if(PRODUC) $.mobile.loading('hide');
       break;
       case Media.MEDIA_PAUSED: console.log('Status change: paused');
       break;
