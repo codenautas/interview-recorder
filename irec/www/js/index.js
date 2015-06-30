@@ -68,6 +68,20 @@ window.addEventListener('error',function(e){
     uglyLog(e.message || ''+e).textContent+=e.stack;
 });
 
+$('#guia-list').on('pagecreate', function(){
+  //inicializar el boton para crear nuevas guias
+  $('a[href="#nueva-guia"]').on('click', function(evt){
+    evt.preventDefault();
+    var p = prompt("Nombre de la nueva guia","");
+    if(!p || !p.trim()) {
+      $(':mobile-pagecontainer').pagecontainer('change','#home');
+      return false;
+    }
+    $('#titulo-guia').text(p);
+    $(':mobile-pagecontainer').pagecontainer('change','#nueva-guia');
+  });
+});
+
 $('#guia-list').on('pageshow', function(e, pages){
   console.log('pageshow en guia-list');
   var container = $('#guias', pages.toPage);
@@ -80,8 +94,16 @@ $('#guia-list').on('pageshow', function(e, pages){
       .data('guia',e)
       .text(e.nombre)
       .appendTo(li)
+      .on('taphold', function(evt){
+        var p = confirm('Eliminar la guia "'+e.nombre+'"?');
+      })
       .click(function(evt){
         evt.preventDefault();
+        var p = prompt("Nombre la entrevista","");
+        if(!p || !p.trim()) {
+          return;
+        }
+        $('#titulo-entrevista').text(p);
         $('#interview').data('guia',e);
         $(':mobile-pagecontainer').pagecontainer('change','#interview');
       });
