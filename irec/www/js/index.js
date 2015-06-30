@@ -215,7 +215,50 @@ $('#revision').on('pageshow', function(e, pages){
 });
 $('#nueva-guia').on('pagecreate', function(){
   console.log('pagecreate on nueva-guia');
-  console.log(JSON.stringify(crearGuia()));
-  guias.lista.push(crearGuia());
-  guias.guardarGuias(function(){console.log('se guardaron las guias')})
+
+  $('#guardar-guia').on('click', function(evt){
+    evt.preventDefault();
+    if(!$('#titulo-guia').text() || $('li.pregunta').length < 1) {
+      alert('Hay un error en la guia');
+      return;
+    }
+    $.mobile.loading('show');
+    var guia = {
+      nombre: $('#titulo-guia').text(),
+      id: guid(),
+      preguntas: {}
+    };
+    $('#preguntas li').each(function(i,e){
+      console.log( $(e).children().first().text() );
+      guia.preguntas[i+1] = $(e).children().first().text()
+    });
+    guias.agregarGuia(guia, function(){
+      $.mobile.loading('hide');
+      $(':mobile-pagecontainer').pagecontainer('change','#guia-list');
+    });
+  });
+  $('#agregarPregunta').on('click', function(evt){
+    evt.preventDefault();
+    if($('#preguntaInput').val()) {
+      var li = $('<li />')
+        .attr('data-icon','delete')
+        .addClass('pregunta');
+      var a = $('<a href="#" />')
+        .text($('#preguntaInput').val())
+        .click(function(evt2){
+          evt2.preventDefault();
+          $(this).parent().remove();
+          $('body').focus(); //<- para que no caiga el focus directo en el input
+        })
+        .appendTo(li);
+      $('#preguntas').append(li);
+      $('#preguntas').listview('refresh');
+      $('#preguntaInput').val('').focus();
+    }
+  });
+});
+$('#nueva-guia').on('pageshow', function(e, pages){
+  $('#preguntaInput').val("");
+  $('#preguntas').empty();
+  $('#preguntas').listview('refresh');
 });
