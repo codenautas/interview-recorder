@@ -42,7 +42,19 @@ function init(){
     
   });
 }
-
+$('#guia-list').on('pagecreate', function(){
+  //inicializar el boton para crear nuevas guias
+  $('a[href="#nueva-guia"]').on('click', function(evt){
+    evt.preventDefault();
+    var p = prompt("Nombre de la nueva guia","");
+    if(!p || !p.trim()) {
+      $(':mobile-pagecontainer').pagecontainer('change','#home');
+      return false;
+    }
+    $('#titulo-guia').text(p);
+    $(':mobile-pagecontainer').pagecontainer('change','#nueva-guia');
+  });
+});
 $('#guia-list').on('pageshow', function(e, pages){
   console.log('pageshow en guia-list');
   var container = $('#guias', pages.toPage);
@@ -55,8 +67,16 @@ $('#guia-list').on('pageshow', function(e, pages){
       .data('guia',e)
       .text(e.nombre)
       .appendTo(li)
+      .on('taphold', function(evt){
+        var p = confirm('Eliminar la guia "'+e.nombre+'"?');
+      })
       .click(function(evt){
         evt.preventDefault();
+        var p = prompt("Nombre la entrevista","");
+        if(!p || !p.trim()) {
+          return;
+        }
+        $('#titulo-entrevista').text(p);
         $('#interview').data('guia',e);
         $(':mobile-pagecontainer').pagecontainer('change','#interview');
       });
@@ -72,8 +92,11 @@ $('#entrevista-list').on('pageshow', function(e, pages){
     var li = $('<li />').appendTo(container);
     var a = $('<a />')
       .attr('href','#revision')
-      .text(e.id)
+      .text(e.nombre)
       .appendTo(li)
+      .on('taphold', function(evt){
+        var p = confirm('Eliminar la entrevista "'+e.nombre+'"?');
+      })
       .click(function(evt){
         evt.preventDefault();
         //esta vez pasamos el indice de la entrevista
@@ -97,7 +120,7 @@ $('#interview').on('pagecreate', function(){
 });
 $('#interview').on('pageshow', function(e, pages){
   // console.log(e);
-  // console.log(pages);
+  $.mobile.loading('show');
   console.log('pageshow on interview');
   var guia = pages.toPage.data('guia');
   var container = $('#guia', pages.toPage);
@@ -110,6 +133,7 @@ $('#interview').on('pageshow', function(e, pages){
 
       container.append(div);
     });
+    $.mobile.loading('hide');
   });
 });
 $('#revision').on('pagecreate', function(){
@@ -128,16 +152,16 @@ $('#revision').on('pagecreate', function(){
 
   //inicializacion de indicadores de tiempo
   revisionApi.currentTime = $('#currentTime').text("00:00");
-  revisionApi.totalTime = $('#totalTime').text(0);
 });
 $('#revision').on('pageshow', function(e, pages){
   console.log('pageshow en #revision');
 
-  // var entrevista = crearEntrevista(); <-- asi lo teniamos antes
+  // var entrevista = crearEntrevista();
   var entrevista = entrevistas.lista[pages.toPage.data('entrevistaIdx')];
   var guia = guias.lista.filter(function(g){
     return g.id == entrevista.interview;
   })[0];
+  $('#titulo-entrevista').text(entrevista.nombre);
   var container = $('div#respuestas', pages.toPage);
   container.empty();
   revisionApi.load(pages.toPage.data('entrevistaIdx'));
@@ -151,21 +175,62 @@ $('#revision').on('pageshow', function(e, pages){
     });
 
     $.each(tags, function(ii,ee){
-      div.append( createSeekButton(ee.time) );
+      div.append( revisionApi.createSeekButton(ee.time) );
     });
 
     container.append(div);
   });
+  $.mobile.loading('hide');
 });
-/*function createSeekButton(time){
-  var button = $('<button />')
-    .text('Go!')
-    .click(function(e){
-      console.log('reproducir desde '+time);
+$('#nueva-guia').on('pagecreate', function(){
+  console.log('pagecreate on nueva-guia');
+
+  $('#guardar-guia').on('click', function(evt){
+    evt.preventDefault();
+    if(!$('#titulo-guia').text() || $('li.pregunta').length < 1) {
+      alert('Hay un error en la guia');
+      return;
+    }
+    $.mobile.loading('show');
+    var guia = {
+      nombre: $('#titulo-guia').text(),
+      id: guid(),
+      preguntas: {}
+    };
+    $('#preguntas li').each(function(i,e){
+      console.log( $(e).children().first().text() );
+      guia.preguntas[i+1] = {texto: $(e).children().first().text()}
     });
-  return button;
-}
-*/
+    guias.agregarGuia(guia, function(){
+      $.mobile.loading('hide');
+      $(':mobile-pagecontainer').pagecontainer('change','#guia-list');
+    });
+  });
+  $('#agregarPregunta').on('click', function(evt){
+    evt.preventDefault();
+    if($('#preguntaInput').val()) {
+      var li = $('<li />')
+        .attr('data-icon','delete')
+        .addClass('pregunta');
+      var a = $('<a href="#" />')
+        .text($('#preguntaInput').val())
+        .click(function(evt2){
+          evt2.preventDefault();
+          $(this).parent().remove();
+          $('body').focus(); //<- para que no caiga el focus directo en el input
+        })
+        .appendTo(li);
+      $('#preguntas').append(li);
+      $('#preguntas').listview('refresh');
+      $('#preguntaInput').val('').focus();
+    }
+  });
+});
+$('#nueva-guia').on('pageshow', function(e, pages){
+  $('#preguntaInput').val("");
+  $('#preguntas').empty();
+  $('#preguntas').listview('refresh');
+});
 window.addEventListener('error',function(e){
     uglyLog(e.message || ''+e)
     uglyLog(''+e.stack);
