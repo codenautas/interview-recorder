@@ -173,32 +173,32 @@ $('#revision').on('pagecreate', function(){
   //inicializacion de botones
   $('#play').click(function(e) {
     e.preventDefault();
-    mediaApi.play();
+    revisionApi.play();
   });
 
   $('#pausa').click(function(e){
     e.preventDefault();
-    mediaApi.pausa();
+    revisionApi.pausa();
   });
 
   //inicializacion de indicadores de tiempo
-  mediaApi.currentTime = $('#currentTime').text("00:00");
-  mediaApi.totalTime = $('#totalTime').text(0);
+  revisionApi.currentTime = $('#currentTime').text("00:00");
 });
 $('#revision').on('pageshow', function(e, pages){
   console.log('pageshow en #revision');
 
-  // var entrevista = crearEntrevista(); <-- asi lo teniamos antes
+  // var entrevista = crearEntrevista();
   var entrevista = entrevistas.lista[pages.toPage.data('entrevistaIdx')];
   var guia = guias.lista.filter(function(g){
     return g.id == entrevista.interview;
   })[0];
+  $('#titulo-entrevista').text(entrevista.nombre);
   var container = $('div#respuestas', pages.toPage);
   container.empty();
-  mediaApi.load(pages.toPage.data('entrevistaIdx'));
+  revisionApi.load(pages.toPage.data('entrevistaIdx'));
   $.each(guia.preguntas, function(i,e){
     var div = $('<div class="respuesta" />');
-    div.append(mediaApi.createTagButton(i));
+    div.append(revisionApi.createTagButton(i));
     div.append(e);
 
     var tags = entrevista.tags.filter(function(tag){
@@ -206,11 +206,12 @@ $('#revision').on('pageshow', function(e, pages){
     });
 
     $.each(tags, function(ii,ee){
-      div.append( createSeekButton(ee.time) );
+      div.append( revisionApi.createSeekButton(ee.time) );
     });
 
     container.append(div);
   });
+  $.mobile.loading('hide');
 });
 $('#nueva-guia').on('pagecreate', function(){
   console.log('pagecreate on nueva-guia');
