@@ -120,8 +120,11 @@ $('#entrevista-list').on('pageshow', function(e, pages){
     var li = $('<li />').appendTo(container);
     var a = $('<a />')
       .attr('href','#revision')
-      .text(e.id)
+      .text(e.nombre)
       .appendTo(li)
+      .on('taphold', function(evt){
+        var p = confirm('Eliminar la entrevista "'+e.nombre+'"?');
+      })
       .click(function(evt){
         evt.preventDefault();
         //esta vez pasamos el indice de la entrevista
