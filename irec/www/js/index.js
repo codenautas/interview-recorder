@@ -150,7 +150,7 @@ $('#interview').on('pagecreate', function(){
 
 $('#interview').on('pageshow', function(e, pages){
   // console.log(e);
-  // console.log(pages);
+  $.mobile.loading('show');
   console.log('pageshow on interview');
   var guia = pages.toPage.data('guia');
   var container = $('#guia', pages.toPage);
@@ -163,6 +163,7 @@ $('#interview').on('pageshow', function(e, pages){
 
       container.append(div);
     });
+    $.mobile.loading('hide');
   });
 });
 
