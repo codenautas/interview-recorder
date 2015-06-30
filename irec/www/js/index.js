@@ -184,7 +184,14 @@ $('#revision').on('pageshow', function(e, pages){
 });
 $('#nueva-guia').on('pagecreate', function(){
   console.log('pagecreate on nueva-guia');
+  $( "#preguntas" ).sortable({
+    axis: 'y'
+  });
+  $( "#preguntas" ).disableSelection();
 
+  $( "#preguntas" ).on("sortstop", function(event, ui) {
+    $('#preguntas').listview('refresh');
+  });
   $('#guardar-guia').on('click', function(evt){
     evt.preventDefault();
     if(!$('#titulo-guia').text() || $('li.pregunta').length < 1) {
