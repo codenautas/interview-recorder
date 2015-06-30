@@ -1,12 +1,31 @@
-  
 var revisionApi = {
   playTime: 0,
-  initialize: function() {
-    //inicializacion de estado de reproduccion
+  mediaStartDate: 0,
+  mediaDuration: 0,
+  entrevista: null,
+  colorTagPasado: '#84EC61',
+  colorTagPendiente: '#f6f6f6',
+  isPlaying: false,
+  interval: null,
+  currentTime: $('#currentTime').text("00:00"),
+  reset: function(){
+    if(revisionApi.isPlaying) {
+      revisionApi.pausa();
+    }
+    if(revisionApi.audio) {
+      revisionApi.audio.release();
+    }
+    revisionApi.mediaStartDate = 0;
+    revisionApi.mediaDuration = 0;
+    revisionApi.playTime = 0;
+    revisionApi.interval = null;
+    revisionApi.audio = null;
+    revisionApi.playTime = 0;
+    revisionApi.entrevista = null;
     revisionApi.isPlaying = false;
-
-    //initialize with load
-    // revisionApi.load('/android_asset/www/intro.mp3');
+    revisionApi.currentTime.text("00:00");
+  },
+  initialize: function() {
     uglyLog('revisionApi ini');
   },
   pausa: function() {
@@ -18,6 +37,28 @@ var revisionApi = {
     revisionApi.isPlaying = false;
     revisionApi.audio.pause();
   },
+  onUpdate: function() {
+    revisionApi.audio.getCurrentPosition(function(t){
+      revisionApi.playTime = t;
+      revisionApi.currentTime.text( clockFormat(t) );
+      //recordar que t esta expresado en SEGUNDOS!!!
+      $('button.tag').each(function(i,e){
+        if($(e).data('miliseconds') < t * 1000) {
+          $(e).css('background-color', revisionApi.colorTagPasado);
+        }
+      });
+    });
+  },
+  seek: function(ms) {
+    $('button.tag').each(function(i,e){
+      if(ms > $(e).data('miliseconds')) {
+        $(e).css('background-color',revisionApi.colorTagPasado);
+      }else{
+        $(e).css('background-color',revisionApi.colorTagPendiente);
+      }
+    });
+    revisionApi.audio.seekTo(ms);
+  },  
   play: function() {
     if(revisionApi.isPlaying || !revisionApi.audio) {
       return;
@@ -51,6 +92,19 @@ var revisionApi = {
     }
     console.log('media stop/played/rec success');
   },
+  createSeekButton: function(time) {
+    var milisecondsFromStart = new Date(time) - revisionApi.mediaStartDate;
+    var button = $('<button />')
+      .addClass("ui-btn ui-btn-inline ui-mini")
+      .addClass('tag')
+      .data('miliseconds', milisecondsFromStart)
+      .text('Go!')
+      .click(function(e){
+        console.log('reproducir desde '+time);
+        revisionApi.seek(milisecondsFromStart);
+      });
+    return button;
+  },
   load: function(entrevistaId) {
     if(revisionApi.isPlaying) {
       revisionApi.pausa();
@@ -76,7 +130,7 @@ var revisionApi = {
         if(!revisionApi.audio.initialized) {
           revisionApi.audio.getCurrentPosition(function(){
             console.log(revisionApi.audio._duration);
-            revisionApi.totalTime.text( clockFormat(revisionApi.audio._duration) );
+            revisionApi.mediaDuration = revisionApi.audio._duration;
             revisionApi.audio.stop();
             revisionApi.audio.initialized = true;
           });
