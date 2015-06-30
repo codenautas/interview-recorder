@@ -41,20 +41,3 @@ var guias = {
     fileApi.dir.getFile('guias.json', {create:true}, onFile, onError);
   }
 };
-
-
-function crearGuia() {
-  var guia = {
-    nombre: 'Curso Phonegap',
-    id: guid(),
-    preguntas: {
-      1: {texto: "Preséntese y cuénteme por qué quiere hacer el curso de Phonegap"},
-      2: {texto: "Nombre"},
-      3: {texto: "Edad"},
-      4: {texto: "Conocimientos previos"},
-      5: {texto: "Experiencia en mobile"},
-      6: {texto: "Experiencia general"}
-    }
-  };
-  return guia;
-}

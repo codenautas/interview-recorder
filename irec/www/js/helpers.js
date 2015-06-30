@@ -1,34 +1,3 @@
-
-function createTagButton(ref){
-  var button = $('<button />');
-  button.text('+')
-  button.click(function(e){
-    console.log('agregar tag ' + ref + ' en ' + new Date());
-  });
-  return button;
-}
-
-function createSeekButton(time){
-  var button = $('<button />')
-    .text('Go!')
-    .click(function(e){
-      console.log('reproducir desde '+time);
-    });
-  return button;
-}
-
-function getRecordFile(callback){ // <-- recibimos una func como parametro
-  var root = cordova.file.externalDataDirectory;
-  window.resolveLocalFileSystemURL(root, function(rootDir){
-    rootDir.getDirectory('audio', {create: true}, function(audioDir){
-      audioDir.getFile('record.amr', {create: true}, function(file){
-        callback(file); // <-- ejecutamos la funcion, pasandole
-                        // el resultado
-      });
-    });
-  });
-}
-
 function clockFormat(secs) {
   secs = secs << 0;
   var minutes = (secs / 60) << 0;
@@ -38,6 +7,7 @@ function clockFormat(secs) {
   return minutes+":"+seconds;
 }
 
+//RFC4122
 function guid() {
   function s4() {
     return Math.floor((1 + Math.random()) * 0x10000)
@@ -46,6 +16,21 @@ function guid() {
   }
   return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
     s4() + '-' + s4() + s4() + s4();
+}
+
+function crearGuia() {
+  var guia = {
+    nombre: 'Ejemplo',
+    id: guid(),
+    preguntas: {
+      1: {texto: "Nombre"},
+      2: {texto: "Edad"},
+      3: {texto: "Sexo"},
+      4: {texto: "Estado civil"},
+      5: {texto: "Sobrenombre"}
+    }
+  };
+  return guia;
 }
 
 function uglyLog(message){
@@ -72,4 +57,3 @@ function uglyError(modulo,err){
     uglyLog(modulo);
     uglyLog(err.message || err);
     uglyLog(err.stack);
-}
