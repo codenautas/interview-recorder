@@ -208,7 +208,7 @@ $('#nueva-guia').on('pagecreate', function(){
     };
     $('#preguntas li').each(function(i,e){
       console.log( $(e).children().first().text() );
-      guia.preguntas[i+1] = $(e).children().first().text()
+      guia.preguntas[i+1] = {texto: $(e).children().first().text()};
     });
     guias.agregarGuia(guia, function(){
       if(PRODUC) $.mobile.loading('hide');
