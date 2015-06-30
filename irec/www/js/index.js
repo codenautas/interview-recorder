@@ -4,22 +4,23 @@ var jqmReady = $.Deferred();
 console.log('reading main script');
 
 $(document).on('deviceready', function(){
-    console.log('device is ready');
-    deviceReady.resolve();
+  console.log('device is ready');
+  deviceReady.resolve();
 });
 $(document).on('mobileinit', function(){
-    console.log('jqm is ready');
-    jqmReady.resolve();
+  console.log('jqm is ready');
+  jqmReady.resolve();
 });
 $(document).ready(function(){
-    console.log('document is ready');
-    documentReady.resolve();
+  console.log('document is ready');
+  documentReady.resolve();
 });
 
-$.when(jqmReady,documentReady, deviceReady).then(init);
+
+// $.when(jqmReady, documentReady).then(init);
+$.when(deviceReady, jqmReady, documentReady).then(init);
 
 function init(){
-  uglyLog('init');
   console.log('init');
   // Configuracion de JQM para phonegap
   $.mobile.allowCrossDomainPages = true;
@@ -27,323 +28,241 @@ function init(){
   $.mobile.buttonMarkup.hoverDelay = 0;
   $.mobile.pushStateEnabled = false;
   $.mobile.defaultPageTransition = "none";
-  recordApi.initialize();
-  mediaApi.initialize();
-}
 
-
-function crearGuia() {
-  var guia = {
-    nombre: 'Curso Phonegap',
-    preguntas: {
-      1: {texto: "Preséntese y cuénteme por qué quiere hacer el curso de Phonegap"},
-      2: {texto: "Nombre"},
-      3: {texto: "Edad"},
-      4: {texto: "Conocimientos previos"},
-      5: {texto: "Experiencia en mobile"},
-      6: {texto: "Experiencia general"}
+  fileApi.initialize(function(err, apiRef){
+    if(err) {
+      console.log('file api error');
+      console.log(err);
+      return;
     }
-  };
-  return guia;
-}
 
-function crearEntrevista(){
-  var entrevista = {
-    interview: 34,
-    start: '2001-12-14T21:59:43.10-03:00',
-    stop: '2001-12-14T22:11:02.35-03:00',
-    tags: [
-      {
-        ref: 1,
-        time: '2001-12-14T22:00:18.15-03:00'
-      },
-      {
-        ref: 5,
-        time: '2001-12-14T22:03:21.33-03:00'
-      },
-      {
-        ref: 2,
-        time: '2001-12-14T22:04:02.22-03:00'
-      },
-      {
-        ref: 3,
-        time: '2001-12-14T22:04:02.43-03:00'
-      },
-      {
-        ref: 5,
-        time: '2001-12-14T22:07:41.56-03:00'
-      }
-    ]
-  }
-  return entrevista;
-}
+    guias.initialize();
+    entrevistas.initialize();
 
-function createTagButton(ref){
-  var button = $('<button />');
-  button.text('+')
-  button.click(function(e){
-    console.log('agregar tag ' + ref + ' en ' + new Date());
+    recordApi.initialize();
+
   });
-  return button;
 }
 
-function createSeekButton(time){
-  var button = $('<button />')
-    .text('Go!')
-    .click(function(e){
-      console.log('reproducir desde '+time);
-    });
-  return button;
-}
 
-  $('#home').on('pagecreate', function(e){
-    uglyLog('pageCreate');
-    //creamos el modelo de datos
-    var guia = crearGuia();
+$('#guia-list').on('pagecreate', function(){
+  //inicializar el boton para crear nuevas guias
+  $('a[href="#nueva-guia"]').on('click', function(evt){
+    evt.preventDefault();
+    var p = prompt("Nombre de la nueva guia","");
+    if(!p || !p.trim()) {
+      $(':mobile-pagecontainer').pagecontainer('change','#home');
+      return false;
+    }
+    $('#titulo-guia').text(p);
+    $(':mobile-pagecontainer').pagecontainer('change','#nueva-guia');
+  });
+});
 
-    //seleccionamos el div con id=guia
-    var container = $('div#guia', this);
+$('#guia-list').on('pageshow', function(e, pages){
+  console.log('pageshow en guia-list');
+  var container = $('#guias', pages.toPage);
+  container.empty();
+  $.each(guias.lista, function(i,e){
+    var stringData = JSON.stringify(e);
+    var li = $('<li />').appendTo(container);
+    var a = $('<a />')
+      .attr('href','#interview')
+      .data('guia',e)
+      .text(e.nombre)
+      .appendTo(li)
+      .on('taphold', function(evt){
+        var p = confirm('Eliminar la guia "'+e.nombre+'"?');
+      })
+      .click(function(evt){
+        evt.preventDefault();
+        var p = prompt("Nombre la entrevista","");
+        if(!p || !p.trim()) {
+          return;
+        }
+        $('#titulo-entrevista').text(p);
+        $('#interview').data('guia',e);
+        $(':mobile-pagecontainer').pagecontainer('change','#interview');
+      });
+  });
+  container.listview('refresh');
+});
 
-    //lo vaciamos
-    container.empty();
 
-    //creamos una entrevista para revision
-    var entrevista = crearEntrevista();
+$('#entrevista-list').on('pageshow', function(e, pages){
+  console.log('pageshow en entrevista-list');
+  var container = $('#entrevistas', pages.toPage);
+  container.empty();
+  $.each(entrevistas.lista, function(i,e){
+    var stringData = JSON.stringify(e);
+    var li = $('<li />').appendTo(container);
+    var a = $('<a />')
+      .attr('href','#revision')
+      .text(e.nombre)
+      .appendTo(li)
+      .on('taphold', function(evt){
+        var p = confirm('Eliminar la entrevista "'+e.nombre+'"?');
+      })
+      .click(function(evt){
+        evt.preventDefault();
+        //esta vez pasamos el indice de la entrevista
+        $('#revision').data('entrevistaIdx',i);
+        $(':mobile-pagecontainer').pagecontainer('change','#revision');
+      });
+  });
+  container.listview('refresh');
+});
 
+
+$('#interview').on('pagecreate', function(){
+  console.log('pagecreate on interview');
+
+  $('#record').click(function(e){
+    e.preventDefault();
+    if(recordApi.isRecording) {
+      recordApi.stop();
+    }else{
+      recordApi.record();
+    }
+  });
+});
+
+$('#interview').on('pageshow', function(e, pages){
+  // console.log(e);
+  $.mobile.loading('show');
+  console.log('pageshow on interview');
+  var guia = pages.toPage.data('guia');
+  var container = $('#guia', pages.toPage);
+  container.empty();
+  recordApi.nuevaGrabacion(guia.id, function(){
     $.each(guia.preguntas, function(i,e){
-      //creamos un div
-      var div = $('<div />');
-      
-      div.append( createTagButton(i) );
-      
-      //le asignamos el texto de la pregunta
-      div.append(e.texto);
+      var div = $('<div class="respuesta" />');
+      div.append(recordApi.createTagButton(i));
+      div.append(e);
 
-      var tags = entrevista.tags.filter(function(tag){
-        //devolvemos true solo si el tag.ref es igual
-        //al key de la pregunta
-        return tag.ref == i;
-      });
-      //y ahora que tenemos el array tags, iteramos
-      $.each(tags, function(ii,ee){
-        //creamos el boton y lo agregamos al div
-        div.append( createSeekButton(ee.time) );
-      });
-
-      //y lo agregamos al container (div#respuestas)
       container.append(div);
     });
+    $.mobile.loading('hide');
   });
-  
-var mediaApi = {
-  pathToPlay: 'media stop/played/rec success',
-  initialize: function() {
-    uglyLog('new');
-    //asignamos una instancia de Media a mediaApi.audio
-    mediaApi.audio = new Media('/android_asset/www/intro.mp3', mediaApi.onSuccess, mediaApi.onError, mediaApi.onStatus);
-
-    //inicializacion de botones
-    $('#play').click(function(e) {
-      e.preventDefault();
-      mediaApi.play();
-    });
-
-    $('#pause').click(function(e){
-      e.preventDefault();
-      mediaApi.pausa();
-    });    
-
-    //inicializacion de indicadores de tiempo
-    mediaApi.currentTime = $('#currentTime').text(0);
-    mediaApi.totalTime = $('#totalTime').text(0);
-
-    //inicializacion de estado de reproduccion
-    mediaApi.isPlaying = false;
-
-    uglyLog('to load');
-    
-    mediaApi.load('/android_asset/www/schuman.mp3');
-  },
-  //a partir de aca son los handlers/calllbacks
-  //de success, status y error.
-  onSuccess: function(){
-    if(mediaApi.interval) { // <-- check
-      clearInterval(mediaApi.interval); // <-- clear
-      // mediaApi.currentTime.text(0); // <-- reset
-      mediaApi.interval = null; // <-- reset
-      mediaApi.isPlaying = false; // <-- switch
-    }
-    console.log(mediaApi.pathToPlay);
-  },  
-  onStatus: function(status) {
-    switch(status) {
-      case Media.MEDIA_NONE: console.log('Status change: idle');
-      break;
-      case Media.MEDIA_STARTING: console.log('Status change: starting');
-      break;
-      case Media.MEDIA_RUNNING:
-        console.log('Status change: running');
-        if(!mediaApi.audio.initialized) { // <-- check!
-          mediaApi.audio.getCurrentPosition(function(){
-            console.log(mediaApi.audio._duration);
-            mediaApi.audio.stop(); // <-- STOP!
-            mediaApi.audio.initialized = true; // <-- switch
-          });
-        }
-      break;
-      case Media.MEDIA_PAUSED: console.log('Status change: paused');
-      break;
-      case Media.MEDIA_STOPPED: console.log('Status change: stopped');
-      break;
-      default: console.log('unknown status');
-    }
-  },
-  onError: function(err) {
-    console.log('Error');
-    console.log(err);
-  },
-  play: function() {
-    if(mediaApi.isPlaying) {
-      return;
-    }
-    if(mediaApi.interval){
-      clearInterval(mediaApi.interval);  
-      mediaApi.interval=null;
-    }
-    mediaApi.interval = setInterval(function(){
-      mediaApi.audio.getCurrentPosition(function(t){
-        mediaApi.currentTime.text(t.toFixed(2));
-      });
-    },100);
-    mediaApi.isPlaying = true;
-    mediaApi.audio.play();
-  },
-  pausa: function() {
-    if(!mediaApi.isPlaying) {
-      return;
-    }
-    if(mediaApi.interval){
-        clearInterval(mediaApi.interval);
-        mediaApi.interval=null;
-    }
-    mediaApi.isPlaying = false;
-    mediaApi.audio.pause();
-  },
-  load: function(path) {
-    if(mediaApi.isPlaying) { // <-- check
-      mediaApi.pausa();
-    }
-    if(mediaApi.audio) { // <-- check
-      mediaApi.audio.release();
-    }
-    mediaApi.audio = new Media(path, mediaApi.onSuccess, mediaApi.onError, mediaApi.onStatus);
-    //falso play
-    mediaApi.interval2 = setInterval(function(){
-      var dur = mediaApi.audio.getDuration();
-      mediaApi.totalTime.text(dur.toFixed(2)+'...');
-      if(dur>0){
-          clearInterval(mediaApi.interval2);
-      }
-      mediaApi.audio.seekTo(100,function(){
-        var dur = mediaApi.audio.getDuration();
-        mediaApi.totalTime.text(dur.toFixed(2)+'.');
-        mediaApi.currentTime.text(t.toFixed(2));
-        if(dur>0){
-            clearInterval(mediaApi.interval2);
-            mediaApi.audio.seekTo(0);
-        }
-      });
-    },1000);
-    console.log('audio file loaded');
-  },
-}
-
-function getRecordFile(callback){ // <-- recibimos una func como parametro
-  var root = cordova.file.externalDataDirectory;
-  window.resolveLocalFileSystemURL(root, function(rootDir){
-    rootDir.getDirectory('audio', {create: true}, function(audioDir){
-      audioDir.getFile('record.amr', {create: true}, function(file){
-        callback(file); // <-- ejecutamos la funcion, pasandole
-                        // el resultado
-      });
-    });
-  });
-}
-
-var recordApi = {
-  initialize: function(){
-    //guardamos una referencia al boton
-    uglyLog('button');
-
-    recordApi.button = $('#rec');
-    //inicializar el boton
-    
-    recordApi.button.click(function(e){
-      e.preventDefault();
-      if(recordApi.isRecording) {
-        recordApi.stop();
-      }else{
-        recordApi.record();
-      }
-    });
-
-    //inicializar estado
-    recordApi.isRecording = false;
-
-    //obtener la ruta al archivo de grabacion
-    getRecordFile(function(file){
-      uglyLog('getRecord');
-      recordApi.button.prop( "disabled", false );
-      recordApi.recordFile = file.nativeURL;
-      mediaApi.pathToPlay = file.nativeURL;
-      recordApi.media = new Media(recordApi.recordFile, recordApi.onStop, recordApi.onError, recordApi.onStatus);
-    });
-  },
-  onStop: function(){
-    recordApi.media.release();
-    mediaApi.load(recordApi.recordFile);
-  },
-  onError: function(err){
-    console.log('Recording error');
-    console.log(err);
-  },
-  onStatus: function(status){
-    switch(status) {
-      case Media.MEDIA_RUNNING:
-        console.log('Status change: running');
-        recordApi.isRecording = true;
-        recordApi.button.css('background-color','red');
-      break;
-      case Media.MEDIA_STOPPED:
-        console.log('Status change: stopped');
-        recordApi.isRecording = false;
-        recordApi.button.css('background-color', '#333');
-      break;
-    }
-  },
-  record: function(){
-    recordApi.button.html('').append('Rec').append($('<br>')).append(
-        $('<span style="font-size:40%">').text('(press to stop)')
-    );
-    recordApi.media.startRecord();
-  },
-  stop: function(){
-    recordApi.button.text('Rec');
-    recordApi.media.stopRecord();
-  },
-}  
-
-function uglyLog(message){
-    var div=document.getElementById('uglyLog');
-    if(!div){
-        div=document.createElement('div');
-        div.id='uglyLog';
-        document.body.appendChild(div);
-    }
-    div.textContent=(div.textContent||'') + message+'. ';
-    return div;
-}
-
-window.addEventListener('error',function(e){
-    uglyLog(e.message || ''+e).textContent+=e.stack;
 });
+
+
+$('#revision').on('pagecreate', function(){
+  console.log('pagecreate on revision');
+
+  //inicializacion de botones
+  $('#play').click(function(e) {
+    e.preventDefault();
+    revisionApi.play();
+  });
+
+  $('#pausa').click(function(e){
+    e.preventDefault();
+    revisionApi.pausa();
+  });
+
+  //inicializacion de indicadores de tiempo
+  revisionApi.currentTime = $('#currentTime').text("00:00");
+  revisionApi.totalTime = $('#totalTime').text(0);
+});
+
+$('#revision').on('pageshow', function(e, pages){
+  console.log('pageshow en #revision');
+
+  // var entrevista = crearEntrevista();
+  var entrevista = entrevistas.lista[pages.toPage.data('entrevistaIdx')];
+  var guia = guias.lista.filter(function(g){
+    return g.id == entrevista.interview;
+  })[0];
+  $('#titulo-entrevista').text(entrevista.nombre);
+  var container = $('div#respuestas', pages.toPage);
+  container.empty();
+  revisionApi.load(pages.toPage.data('entrevistaIdx'));
+  $.each(guia.preguntas, function(i,e){
+    var div = $('<div class="respuesta" />');
+    div.append(revisionApi.createTagButton(i));
+    div.append(e);
+
+    var tags = entrevista.tags.filter(function(tag){
+      return tag.ref == i;
+    });
+
+    $.each(tags, function(ii,ee){
+      div.append( revisionApi.createSeekButton(ee.time) );
+    });
+
+    container.append(div);
+  });
+  $.mobile.loading('hide');
+});
+
+
+$('#nueva-guia').on('pagecreate', function(){
+  console.log('pagecreate on nueva-guia');
+  $( "#preguntas" ).sortable({
+    axis: 'y'
+  });
+  $( "#preguntas" ).disableSelection();
+
+  $( "#preguntas" ).on("sortstop", function(event, ui) {
+    $('#preguntas').listview('refresh');
+  });
+
+  // $('ul#preguntas li').on('click', 'a', function(evt){
+  //   console.log(this);
+  // });
+
+  $('#guardar-guia').on('click', function(evt){
+    evt.preventDefault();
+    if(!$('#titulo-guia').text() || $('li.pregunta').length < 1) {
+      alert('Hay un error en la guia');
+      return;
+    }
+    $.mobile.loading('show');
+    var guia = {
+      nombre: $('#titulo-guia').text(),
+      id: guid(),
+      preguntas: {}
+    };
+    $('#preguntas li').each(function(i,e){
+      console.log( $(e).children().first().text() );
+      guia.preguntas[i+1] = $(e).children().first().text()
+    });
+    guias.agregarGuia(guia, function(){
+      $.mobile.loading('hide');
+      $(':mobile-pagecontainer').pagecontainer('change','#guia-list');
+    });
+  });
+  $('#agregarPregunta').on('click', function(evt){
+    evt.preventDefault();
+    if($('#preguntaInput').val()) {
+      var li = $('<li />')
+        .attr('data-icon','delete')
+        .addClass('pregunta');
+      var a = $('<a href="#" />')
+        .text($('#preguntaInput').val())
+        .click(function(evt2){
+          evt2.preventDefault();
+          $(this).parent().remove();
+          $('body').focus(); //<- para que no caiga el focus directo en el input
+        })
+        .appendTo(li);
+      $('#preguntas').append(li);
+      $('#preguntas').listview('refresh');
+      $('#preguntaInput').val('').focus();
+    }
+  });
+});
+
+$('#nueva-guia').on('pageshow', function(e, pages){
+  $('#preguntaInput').val("");
+  $('#preguntas').empty();
+  $('#preguntas').listview('refresh');
+});
+
+
+
+
+
+
+
