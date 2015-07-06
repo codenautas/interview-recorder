@@ -28,3 +28,7 @@ node_modules
 
 local-*
 *-local.*
+
+irec/.cordova
+irec/platforms
+irec/plugins
