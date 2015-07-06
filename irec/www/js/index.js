@@ -149,7 +149,11 @@ $('#revision').on('pagecreate', function(){
     e.preventDefault();
     revisionApi.pausa();
   });
-
+  
+  $('#backTen').click(function(e){
+      e.preventDefault();
+      revisionApi.backTen();
+  })
   //inicializacion de indicadores de tiempo
   revisionApi.currentTime = $('#currentTime').text("00:00");
 });

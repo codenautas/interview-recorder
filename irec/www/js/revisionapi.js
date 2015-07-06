@@ -64,6 +64,7 @@ var revisionApi = {
     revisionApi.isPlaying = true;
     revisionApi.audio.play();
   },
+  
   createTagButton: function(ref) {
     var button = $('<button />')
       .addClass("ui-btn ui-btn-inline ui-mini")
@@ -135,5 +136,18 @@ var revisionApi = {
   onError: function(err) {
     console.log('Error');
     console.log(err);
+  },
+  backTen: function(){
+    if(!revisionApi.audio){
+        return;
+    }  
+    var backTenPress=revisionApi.playTime;
+    if(backTenPress>10){
+        var backTenTime=backTenPress-10;
+        revisionApi.audio.seekTo(backTenTime*1000)
+        revisionApi.interval = setInterval(revisionApi.onUpdate,500);
+        revisionApi.isPlaying = true;
+        revisionApi.audio.play();
+    }
   }
 }
