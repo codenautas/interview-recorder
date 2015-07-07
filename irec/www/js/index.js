@@ -116,6 +116,14 @@ $('#entrevista-list').on('pageshow', function(e, pages){
 $('#interview').on('pagecreate', function(){
   console.log('pagecreate on interview');
 
+    $('a[href="#home"]', '#interview').on('click', function(evt) {
+      evt.preventDefault(); // cancelar evento
+
+      if(revisionApi.isPlaying) {
+        revisionApi.stop();
+        //revisionApi.reset();
+      }  
+    });
   $('#record').click(function(e){
     e.preventDefault();
     if(recordApi.isRecording) {
@@ -148,6 +156,39 @@ $('#interview').on('pageshow', function(e, pages){
 $('#revision').on('pagecreate', function(){
   console.log('pagecreate on revision');
 
+    $('a[href="#home"]', '#revision').on('click', function(evt) {
+      evt.preventDefault(); // cancelar evento
+
+      if(revisionApi.isPlaying) {
+        revisionApi.pausa();
+        //revisionApi.reset();
+      }
+      if(revisionApi.dirty) {
+        // codigo si hubo cambios
+          var r = confirm('Hay cambios sin guardar en la entrevista, desea guardarlos?');
+          if(r) {
+            // el usuario quiere guardar los cambios
+                entrevistas.guardarEntrevistas(function(){
+                  revisionApi.reset(); // <-- reset, ya que estamos
+                  $.mobile.navigate('#home'); // <-- vamos a #home
+                  $.mobile.loading('hide'); // <-- fuera el spinner  
+                });  
+          }else{
+            // el usuario quiere DESCARTAR los cambios
+                entrevistas.initialize(); // <-- reinit
+                revisionApi.reset();
+                $.mobile.navigate('#home');
+                $.mobile.loading('hide');            
+          }        
+      }else{
+          // codigo si NO hubo cambios
+          revisionApi.reset(); // <-- reset, ya que estamos
+          $.mobile.navigate('#home'); // <-- vamos a #home
+          $.mobile.loading('hide'); // <-- fuera el spinner          
+      }
+
+});  
+  
   //inicializacion de botones
   $('#play').click(function(e) {
     e.preventDefault();
