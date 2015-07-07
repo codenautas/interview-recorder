@@ -29,6 +29,12 @@ function init(){
   $.mobile.pushStateEnabled = false;
   $.mobile.defaultPageTransition = "none";
 
+  document.addEventListener('backbutton', function(){
+    console.log('android back button tapped');
+    console.log(arguments);
+    return false;
+  }, false);
+
   fileApi.initialize(function(err, apiRef){
     if(err) {
       console.log('file api error');
@@ -44,6 +50,21 @@ function init(){
   });
 }
 
+
+$('#home').on('pagecreate', function(){
+  $('#limpiarHuerfanos').on('click', function(evt){
+    evt.preventDefault();
+    $.mobile.loading('show');
+    entrevistas.encontrarArchivosHuerfanos(function(archivos){
+      var cantidad = archivos.length;
+      $.each(archivos, function(i,e){
+        e.remove();
+      });
+      alert('Se eliminaron '+cantidad+' archivos huerfanos');
+      $.mobile.loading('hide');
+    });
+  });
+});
 
 $('#guia-list').on('pagecreate', function(){
   //inicializar el boton para crear nuevas guias
@@ -114,11 +135,18 @@ $('#entrevista-list').on('pageshow', function(e, pages){
 });
 
 
-$('#interview').on('pagecreate', function(){
+$('#interview').on('pagecreate', function(e){
   console.log('pagecreate on interview');
 
-  $('#record').click(function(e){
-    e.preventDefault();
+  $('a[href="#home"]', e.currentTarget).on('click',function(evt){
+    if(recordApi.isRecording) {
+      evt.preventDefault();
+      recordApi.stop();
+    }
+  });
+
+  $('#record').click(function(evt){
+    evt.preventDefault();
     if(recordApi.isRecording) {
       recordApi.stop();
     }else{
@@ -147,7 +175,7 @@ $('#interview').on('pageshow', function(e, pages){
 });
 
 
-$('#revision').on('pagecreate', function(){
+$('#revision').on('pagecreate', function(evt){
   console.log('pagecreate on revision');
 
   //inicializacion de botones
@@ -160,6 +188,45 @@ $('#revision').on('pagecreate', function(){
     e.preventDefault();
     revisionApi.pausa();
   });
+
+  $('#stop').on('click', function(e){
+    e.preventDefault();
+    revisionApi.stop();
+  });
+
+  $('#backTen').click(function(e){
+    e.preventDefault();
+    revisionApi.volver10();
+  });
+
+  $('a[href="#home"]', evt.currentTarget).on('click',function(e){
+    e.preventDefault();
+    $.mobile.loading('show');
+    if(revisionApi.isPlaying) {
+      revisionApi.stop();
+    }
+    if(revisionApi.dirty) {
+      var r = confirm('Hay cambios sin guardar en la entrevista, desea guardarlos?');
+      if(r) {
+        entrevistas.guardarEntrevistas(function(){
+          revisionApi.reset();
+          $.mobile.navigate('#home');
+          $.mobile.loading('hide');
+        });
+      }else{
+        entrevistas.initialize();
+        revisionApi.reset();
+        $.mobile.navigate('#home');
+        $.mobile.loading('hide');
+      }
+    }else{
+      revisionApi.reset();
+      $.mobile.navigate('#home');
+      $.mobile.loading('hide');
+    }
+
+  });
+
 
   //inicializacion de indicadores de tiempo
   revisionApi.currentTime = $('#currentTime').text("00:00");

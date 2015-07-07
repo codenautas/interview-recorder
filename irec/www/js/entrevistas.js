@@ -49,5 +49,39 @@ var entrevistas = {
       );
     }
     fileApi.dir.getFile('entrevistas.json', {create:true}, onFile, onError);
+  },
+  encontrarArchivosHuerfanos: function(callback) {
+    var huerfanos = [];
+    entrevistas.obtenerArchivosDeAudioDeEntrevistas(function(paths){
+      entrevistas.obtenerListaDeArchivosDeAudio(function(err, files){
+        if(err) {
+          //si hay error devuelvo un array vacio
+          return callback && callback([]);
+        }
+        $.each(files, function(i,e){
+          if(paths.indexOf(e.nativeURL) == -1) {
+            huerfanos.push(e);
+          }
+        });
+        callback && callback(huerfanos);
+      });
+    });
+  },
+  obtenerArchivosDeAudioDeEntrevistas: function(callback) {
+    var filePaths = [];
+    $.each(entrevistas.lista, function(idx, item){
+      filePaths.push(item.audioPath);
+    });
+    callback(filePaths);
+  },
+  obtenerListaDeArchivosDeAudio: function(callback) {
+    fileApi.getDir('audio', function(err, dirEntry){
+      if(err){
+        callback && callback(err, []);
+      }
+      fileApi.readDir(dirEntry, function(entries){
+        callback && callback(null, entries);
+      });
+    });
   }
 }
