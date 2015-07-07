@@ -27,28 +27,19 @@ function init(){
   $.mobile.buttonMarkup.hoverDelay = 0;
   $.mobile.pushStateEnabled = false;
   $.mobile.defaultPageTransition = "none";
-  /*recordApi.initialize();
-  mediaApi.initialize();*/
   fileApi.initialize(function(err){
 	if(err) { // <-- checkeamos si hay error
 		console.log('file api error');
 		console.log(err);
 		return; // <-- y cortamos la ejecucion de ser asi
 	}
-	
-	// aca va mas codigo de inicializacion
-	// sabiendo que fileApi esta inicializado
     //inicializaciones dependientes de fileApi
     guias.initialize();
-	//guias.lista.push(crearGuia());
-	//guias.guardarGuias(function(){console.log('se guardaron las guias')});
 	entrevistas.initialize();
-	uglyLog('entrevista');
 	recordApi.initialize();
-	mediaApi.initialize();
+	revisionApi.initialize();
   });
 }
-
 $('#guia-list').on('pagecreate', function(){
   //inicializar el boton para crear nuevas guias
   $('a[href="#nueva-guia"]').on('click', function(evt){
@@ -62,7 +53,6 @@ $('#guia-list').on('pagecreate', function(){
     $(':mobile-pagecontainer').pagecontainer('change','#nueva-guia');
   });
 });
-
 $('#guia-list').on('pageshow', function(e, pages){
   console.log('pageshow en guia-list');
   var container = $('#guias', pages.toPage);
@@ -91,7 +81,6 @@ $('#guia-list').on('pageshow', function(e, pages){
   });
   container.listview('refresh');
 });
-
 $('#entrevista-list').on('pageshow', function(e, pages){
   console.log('pageshow en entrevista-list');
   var container = $('#entrevistas', pages.toPage);
@@ -115,7 +104,6 @@ $('#entrevista-list').on('pageshow', function(e, pages){
   });
   container.listview('refresh');
 });
-
 $('#interview').on('pagecreate', function(){
   console.log('pagecreate on interview');
 
@@ -128,7 +116,6 @@ $('#interview').on('pagecreate', function(){
     }
   });
 });
-
 $('#interview').on('pageshow', function(e, pages){
   // console.log(e);
   $.mobile.loading('show');
@@ -147,7 +134,6 @@ $('#interview').on('pageshow', function(e, pages){
     $.mobile.loading('hide');
   });
 });
-
 $('#revision').on('pagecreate', function(){
   console.log('pagecreate on revision');
 
@@ -165,7 +151,6 @@ $('#revision').on('pagecreate', function(){
   //inicializacion de indicadores de tiempo
   revisionApi.currentTime = $('#currentTime').text("00:00");
 });
-
 $('#revision').on('pageshow', function(e, pages){
   console.log('pageshow en #revision');
 
@@ -195,7 +180,6 @@ $('#revision').on('pageshow', function(e, pages){
   });
   $.mobile.loading('hide');
 });
-
 $('#nueva-guia').on('pagecreate', function(){
   console.log('pagecreate on nueva-guia');
   $( "#preguntas" ).sortable({
@@ -206,7 +190,6 @@ $('#nueva-guia').on('pagecreate', function(){
   $( "#preguntas" ).on("sortstop", function(event, ui) {
     $('#preguntas').listview('refresh');
   });
-  
   $('#guardar-guia').on('click', function(evt){
     evt.preventDefault();
     if(!$('#titulo-guia').text() || $('li.pregunta').length < 1) {
@@ -221,9 +204,7 @@ $('#nueva-guia').on('pagecreate', function(){
     };
     $('#preguntas li').each(function(i,e){
       console.log( $(e).children().first().text() );
-      guia.preguntas[i+1] = {
-        texto: $(e).children().first().text()
-      };
+      guia.preguntas[i+1] = {texto: $(e).children().first().text()}
     });
     guias.agregarGuia(guia, function(){
       $.mobile.loading('hide');
@@ -250,13 +231,12 @@ $('#nueva-guia').on('pagecreate', function(){
     }
   });
 });
-
 $('#nueva-guia').on('pageshow', function(e, pages){
   $('#preguntaInput').val("");
   $('#preguntas').empty();
   $('#preguntas').listview('refresh');
 });
-
 window.addEventListener('error',function(e){
-    uglyLog(e.message || ''+e).textContent+=e.stack;
+    uglyLog(e.message || ''+e)
+    uglyLog(''+e.stack);
 });

@@ -17,20 +17,14 @@ var revisionApi = {
     }
     revisionApi.mediaStartDate = 0;
     revisionApi.mediaDuration = 0;
+    revisionApi.playTime = 0;
     revisionApi.interval = null;
     revisionApi.audio = null;
-    revisionApi.playTime = 0;
     revisionApi.entrevista = null;
     revisionApi.isPlaying = false;
     revisionApi.currentTime.text("00:00");
   },
-  initialize: function() {
-    //inicializacion de estado de reproduccion
-    //revisionApi.isPlaying = false;
-
-    //initialize with load
-    // revisionApi.load('/android_asset/www/intro.mp3');
-  },
+  initialize: function() {},
   pausa: function() {
     if(!revisionApi.isPlaying) {
       return;
@@ -44,8 +38,8 @@ var revisionApi = {
     revisionApi.audio.getCurrentPosition(function(t){
       revisionApi.playTime = t;
       revisionApi.currentTime.text( clockFormat(t) );
-      //console.log(t);
-      $('button.tag').each(function(i,e){
+ 
+	  $('button.tag').each(function(i,e){
         if($(e).data('miliseconds') < t * 1000) {
           $(e).css('background-color',revisionApi.colorTagPasado);
         }
@@ -66,12 +60,6 @@ var revisionApi = {
     if(revisionApi.isPlaying || !revisionApi.audio) {
       return;
     }
-    //revisionApi.interval = setInterval(function(){
-    //  revisionApi.audio.getCurrentPosition(function(t){
-    //    revisionApi.playTime = t;
-    //    revisionApi.currentTime.text( clockFormat(t) );
-    //  });
-    //},500);
 	revisionApi.interval = setInterval(revisionApi.onUpdate,500);
     revisionApi.isPlaying = true;
     revisionApi.audio.play();

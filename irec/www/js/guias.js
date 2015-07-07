@@ -1,5 +1,5 @@
 var guias = {
-  lista: [],
+  lista: [], // <-- array para tener la lista de guias a mano
   ready: false,
   initialize: function(){
     guias.obtenerGuias(function(err, contents){
@@ -11,15 +11,15 @@ var guias = {
         guias.lista = JSON.parse(contents);
       }else{
         guias.lista.push(crearGuia());
-        guias.guardarGuias();
+        guias.guardarGuias(function(){console.log('se guardaron las guias')});
       }
       guias.ready = true;
     });
   },
   guardarGuias: function(callback){
     var guiasEnTexto = JSON.stringify(guias.lista);
-    fileApi.writeTextFile('guias.json', guiasEnTexto, function(content){
-      callback && callback(content);
+    fileApi.writeTextFile('guias.json', guiasEnTexto, function(){
+      callback && callback();
     });
   },
   obtenerGuias: function(callback) {
