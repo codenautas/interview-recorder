@@ -38,169 +38,217 @@ function init(){
     // aca va mas codigo de inicializacion
     // sabiendo que fileApi esta inicializado
     guias.initialize();
-    entrevistas.initialize();    
+    entrevistas.initialize();  
+    recordApi.initialize();
   });
-}
-
-var fileApi = {
-  ready: false, // <--solo por las dudas
-  initialize: function(callback){
-    var path = cordova.file.externalDataDirectory;
-    //si no hay problemas, llamamos a callback con el primer
-    //parametro en null (lo que seria el error)
-    var onResolve = function(directoryEntry) {
-      fileApi.dir = directoryEntry;
-      fileApi.ready = true;
-      callback && callback(null, fileApi);
-    }
-    //si hay un error llamamos a callback con el error
-    //como primer parametro (ver arriba)
-    var onError = function(err){
-      callback && callback(err, fileApi);
-    }
-    window.resolveLocalFileSystemURL(path, onResolve, onError);
-  },
-  writeTextFile: function(file, content, callback) {
-    var onFile = function(fileEntry) {
-      fileEntry.createWriter(
-        function(fileWriter){
-          fileWriter.write(content);
-          callback && callback(content);
-        }, fileApi.onError);
-    }
-    fileApi.dir.getFile(file, {create: true}, onFile, fileApi.onError);
-  },
-  onError: function(err) {
-    console.log(err);
-  },
-  getDir: function(dir, callback) {
-    var onDir = function(dir){
-      callback && callback(null, dir);
-    }
-    var onError = function(err) {
-      callback && callback(err, null);
-    }
-    fileApi.dir.getDirectory(dir, {create:true}, onDir, onError);
-  }
-}
-
-var guias = {
-  lista: [], // <-- array para tener la lista de guias a mano
-  ready: false,
-  initialize: function(){
-    guias.obtenerGuias(function(err, contents){
-      if(err) {
-        console.log('Error obteniendo el archivo de guias');
-        guias.lista = [];
-      }
-      if(contents) {
-        guias.lista = JSON.parse(contents);
-      }
-      guias.ready = true;
-      guias.lista.push(crearGuia());
-      guias.guardarGuias(function(){console.log('se guardaron las guias')})      
-    });
-  },
-  guardarGuias: function(callback){
-    var guiasEnTexto = JSON.stringify(guias.lista);
-    fileApi.writeTextFile('guias.json', guiasEnTexto, function(){
-      callback && callback();
-    });
-  },
-  obtenerGuias: function(callback) {
-    var onError = function(err) {
-      callback && callback(err, null);
-    }
-    var onFile = function(fileEntry) {
-      fileEntry.file(
-        function(fileObject){
-          var reader = new FileReader();
-          reader.onloadend = function(){
-            callback && callback(null, this.result);
-          }
-          reader.readAsText(fileObject);
-        },
-        onError
-      );
-    }
-    fileApi.dir.getFile('guias.json', {create:true}, onFile, onError);
-  }
-}
-
-function crearGuia() {
-  var guia = {
-    nombre: 'Curso Phonegap',
-    preguntas: {
-      1: {texto: "Preséntese y cuénteme por qué quiere hacer el curso de Phonegap"},
-      2: {texto: "Nombre"},
-      3: {texto: "Edad"},
-      4: {texto: "Conocimientos previos"},
-      5: {texto: "Experiencia en mobile"},
-      6: {texto: "Experiencia general"}
-    }
-  };
-  return guia;
-}
-
-var entrevistas = {
-  lista: [],
-  ready: false,
-  initialize: function(){
-    entrevistas.obtenerEntrevistas(function(err, contents){
-      if(err) {
-        console.log('Error obteniendo el archivo de entrevistas');
-        entrevistas.lista = [];
-      }
-      if(contents) {
-        entrevistas.lista = JSON.parse(contents);
-      }
-      entrevistas.ready = true;
-    });
-  },
-  agregar: function(entrevista, callback) {
-    entrevistas.lista.push(entrevista);
-    entrevistas.guardarEntrevistas(function(){
-      console.log('entrevista agregada y guardada');
-      callback && callback(entrevista);
-    });
-  },
-  guardarEntrevistas: function(callback){
-    var entrevistasEnTexto = JSON.stringify(entrevistas.lista);
-    fileApi.writeTextFile('entrevistas.json', entrevistasEnTexto, function(){
-      callback && callback();
-    });
-  },
-  obtenerEntrevistas: function(callback) {
-    var onError = function(err) {
-      callback && callback(err, null);
-    }
-    var onFile = function(fileEntry) {
-      fileEntry.file(
-        function(fileObject){
-          var reader = new FileReader();
-          reader.onloadend = function(){
-            callback && callback(null, this.result);
-          }
-          reader.readAsText(fileObject);
-        },
-        onError
-      );
-    }
-    fileApi.dir.getFile('entrevistas.json', {create:true}, onFile, onError);
-  }
-}
-
-function uglyLog(message){
-    var div=document.getElementById('uglyLog');
-    if(!div){
-        div=document.createElement('div');
-        div.id='uglyLog';
-        document.body.appendChild(div);
-    }
-    div.textContent=(div.textContent||'') + message+'. ';
-    return div;
 }
 
 window.addEventListener('error',function(e){
     uglyLog(e.message || ''+e).textContent+=e.stack;
+});
+
+$('#guia-list').on('pagecreate', function(){
+  //inicializar el boton para crear nuevas guias
+  $('a[href="#nueva-guia"]').on('click', function(evt){
+    evt.preventDefault();
+    var p = prompt("Nombre de la nueva guia","");
+    if(!p || !p.trim()) {
+      $(':mobile-pagecontainer').pagecontainer('change','#home');
+      return false;
+    }
+    $('#titulo-guia').text(p);
+    $(':mobile-pagecontainer').pagecontainer('change','#nueva-guia');
+  });
+});
+$('#guia-list').on('pageshow', function(e, pages){
+  console.log('pageshow en guia-list');
+  var container = $('#guias', pages.toPage);
+  container.empty();
+  $.each(guias.lista, function(i,e){
+    var stringData = JSON.stringify(e);
+    var li = $('<li />').appendTo(container);
+    var a = $('<a />')
+      .attr('href','#interview')
+      .data('guia',e)
+      .text(e.nombre)
+      .appendTo(li)
+      .on('taphold', function(evt){
+        var p = confirm('Eliminar la guia "'+e.nombre+'"?');
+      })
+      .click(function(evt){
+        evt.preventDefault();
+        var p = prompt("Nombre la entrevista","");
+        if(!p || !p.trim()) {
+          return;
+        }
+        $('#titulo-entrevista').text(p);
+        $('#interview').data('guia',e);
+        $(':mobile-pagecontainer').pagecontainer('change','#interview');
+      });
+  });
+  container.listview('refresh');
+});
+
+$('#entrevista-list').on('pageshow', function(e, pages){
+  console.log('pageshow en entrevista-list');
+  var container = $('#entrevistas', pages.toPage);
+  container.empty();
+  $.each(entrevistas.lista, function(i,e){
+    var stringData = JSON.stringify(e);
+    var li = $('<li />').appendTo(container);
+    var a = $('<a />')
+      .attr('href','#revision')
+      .text(e.nombre)
+      .appendTo(li)
+      .on('taphold', function(evt){
+        var p = confirm('Eliminar la entrevista "'+e.nombre+'"?');
+      })
+      .click(function(evt){
+        evt.preventDefault();
+        //esta vez pasamos el indice de la entrevista
+        $('#revision').data('entrevistaIdx',i);
+        $(':mobile-pagecontainer').pagecontainer('change','#revision');
+      });
+  });
+  container.listview('refresh');
+});
+
+$('#interview').on('pagecreate', function(){
+  console.log('pagecreate on interview');
+
+  $('#record').click(function(e){
+    e.preventDefault();
+    if(recordApi.isRecording) {
+      recordApi.stop();
+    }else{
+      recordApi.record();
+    }
+  });
+});
+
+$('#interview').on('pageshow', function(e, pages){
+  // console.log(e);
+  $.mobile.loading('show');
+  console.log('pageshow on interview');
+  var guia = pages.toPage.data('guia');
+  var container = $('#guia', pages.toPage);
+  container.empty();
+  recordApi.nuevaGrabacion(guia.id, function(){
+    $.each(guia.preguntas, function(i,e){
+      var div = $('<div class="respuesta" />');
+      div.append(recordApi.createTagButton(i));
+      div.append(e.texto);
+
+      container.append(div);
+    });
+    $.mobile.loading('hide');
+  });
+});
+
+$('#revision').on('pagecreate', function(){
+  console.log('pagecreate on revision');
+
+  //inicializacion de botones
+  $('#play').click(function(e) {
+    e.preventDefault();
+    revisionApi.play();
+  });
+
+  $('#pausa').click(function(e){
+    e.preventDefault();
+    revisionApi.pausa();
+  });
+
+  //inicializacion de indicadores de tiempo
+  revisionApi.currentTime = $('#currentTime').text("00:00");
+});
+
+
+$('#revision').on('pageshow', function(e, pages){
+  console.log('pageshow en #revision');
+
+  // var entrevista = crearEntrevista();
+  var entrevista = entrevistas.lista[pages.toPage.data('entrevistaIdx')];
+  var guia = guias.lista.filter(function(g){
+    return g.id == entrevista.interview;
+  })[0];
+  $('#titulo-entrevista').text(entrevista.nombre);
+  var container = $('div#respuestas', pages.toPage);
+  container.empty();
+  revisionApi.load(pages.toPage.data('entrevistaIdx'));
+  $.each(guia.preguntas, function(i,e){
+    var div = $('<div class="respuesta" />');
+    div.append(revisionApi.createTagButton(i));
+    div.append(e.texto);
+
+    var tags = entrevista.tags.filter(function(tag){
+      return tag.ref == i;
+    });
+
+    $.each(tags, function(ii,ee){
+      div.append( revisionApi.createSeekButton(ee.time) );
+    });
+
+    container.append(div);
+  });
+  $.mobile.loading('hide');
+});
+
+$('#nueva-guia').on('pagecreate', function(){
+  console.log('pagecreate on nueva-guia');
+  $( "#preguntas" ).sortable({
+    axis: 'y'
+  });
+  $( "#preguntas" ).disableSelection();
+
+  $( "#preguntas" ).on("sortstop", function(event, ui) {
+    $('#preguntas').listview('refresh');
+  });
+  
+  $('#guardar-guia').on('click', function(evt){
+    evt.preventDefault();
+    if(!$('#titulo-guia').text() || $('li.pregunta').length < 1) {
+      alert('Hay un error en la guia');
+      return;
+    }
+    $.mobile.loading('show');
+    var guia = {
+      nombre: $('#titulo-guia').text(),
+      id: guid(),
+      preguntas: {}
+    };
+    $('#preguntas li').each(function(i,e){
+      console.log( $(e).children().first().text() );
+      guia.preguntas[i+1] = {texto: $(e).children().first().text()}
+    });
+    guias.agregarGuia(guia, function(){
+      $.mobile.loading('hide');
+      $(':mobile-pagecontainer').pagecontainer('change','#guia-list');
+    });
+  });
+  $('#agregarPregunta').on('click', function(evt){
+    evt.preventDefault();
+    if($('#preguntaInput').val()) {
+      var li = $('<li />')
+        .attr('data-icon','delete')
+        .addClass('pregunta');
+      var a = $('<a href="#" />')
+        .text($('#preguntaInput').val())
+        .click(function(evt2){
+          evt2.preventDefault();
+          $(this).parent().remove();
+          $('body').focus(); //<- para que no caiga el focus directo en el input
+        })
+        .appendTo(li);
+      $('#preguntas').append(li);
+      $('#preguntas').listview('refresh');
+      $('#preguntaInput').val('').focus();
+    }
+  });
+});
+
+$('#nueva-guia').on('pageshow', function(e, pages){
+  $('#preguntaInput').val("");
+  $('#preguntas').empty();
+  $('#preguntas').listview('refresh');
 });

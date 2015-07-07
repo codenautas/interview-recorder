@@ -121,7 +121,7 @@
   </div>
 
   <div data-role="content">
-
+    <p id="titulo-entrevista"></p>
     <div>
       <button id="record" class="ui-btn ui-btn-inline ui-icon-power">Grabar</button>
       <!-- <button id="record-stop" class="ui-btn ui-btn-inline ui-mini">Stop</button> -->
@@ -129,6 +129,17 @@
     </div>
 
     <div id="guia">
+          <div class="respuesta">
+            <button class="ui-btn ui-btn-inline ui-mini">+</button>
+            Cuenteme de que se trata usted
+            <div class="ui-input-btn ui-btn ui-btn-inline ui-icon-check ui-btn-icon-notext ui-corner-all" style="float:right;"> </div>
+          </div>
+          <div class="respuesta">
+            <button class="ui-btn ui-btn-inline ui-mini">+</button>
+            Edad
+            <div class="ui-input-btn ui-btn ui-btn-inline ui-icon-check ui-btn-icon-notext ui-corner-all" style="float:right;"> </div>
+            <div class="ui-input-btn ui-btn ui-btn-inline ui-icon-check ui-btn-icon-notext ui-corner-all" style="float:right;"> </div>
+          </div>
     </div>
 
   </div>
@@ -141,26 +152,43 @@
 <!-- /PAGINA INTERVIEW -->
 
 !-- PAGINA FORM NUEVA GUIA ... OJO! -->
-<div data-role="page" id="nueva-guia">
-  <div data-role="header">
-    <a href="#home" data-role="back" class="ui-nodisc-icon ui-alt-icon ui-btn ui-shadow ui-corner-all ui-icon-arrow-l ui-btn-icon-notext ui-btn-inline"></a>
-    <h1>Nueva guia</h1>
-  </div>
+    <div data-role="page" id="nueva-guia">
+      <div data-role="header">
+        <a href="#home" data-role="back" class="ui-nodisc-icon ui-alt-icon ui-btn ui-shadow ui-corner-all ui-icon-arrow-l ui-btn-icon-notext ui-btn-inline"></a>
+        <h1>Nueva guia</h1>
+        <a href="#" id="guardar-guia" class="ui-nodisc-icon ui-alt-icon ui-btn ui-shadow ui-corner-all ui-icon-check ui-btn-icon-notext ui-btn-inline"></a>
+      </div>
 
-  <div data-role="content">
-    Aca va el form para nueva guia
-  </div>
+      <div data-role="content">
+        <h4 id="titulo-guia">Titulo de guia</h4>
+        <input type="text" name="preguntaInput" id="preguntaInput" placeholder="Pregunta" value="">
 
-  <div data-role="footer" data-position="fixed">
-    <div data-role="content">?</div>
-  </div>
+        <a href="#" id="agregarPregunta" class="ui-nodisc-icon ui-alt-icon ui-btn ui-icon-plus">Agregar pregunta</a>
+        <ul data-inset="true" id="preguntas" data-role="listview" class="ui-listview">
+          <li data-icon="delete"><a href="#">Sientese piola y cuenteme</a></li>
+          <li data-icon="delete"><a href="#">Cuantas veces al dia se mira al espejo</a></li>
+        </ul>
+      </div>
 
-</div>
+      <div data-role="footer" data-position="fixed">
+        <p>?</p>
+      </div>
+
+    </div>
 <!-- /PAGINA FORM NUEVA GUIA -->   
 
     <script type="text/javascript" src="cordova.js"></script>
     <script type="text/javascript" src="js/jquery.min.js"></script>
-    <script type="text/javascript" src="js/index.js"></script>
+    <script type="text/javascript" src="js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="js/jquery.mobile-1.4.5.min.js"></script>
+    <script type="text/javascript" src="js/jquery.ui.touch-punch.min.js"></script>
+    <script type="text/javascript" src="js/helpers.js"></script>
+    <script type="text/javascript" src="js/fileapi.js"></script>
+    <script type="text/javascript" src="js/entrevistas.js"></script>
+    <script type="text/javascript" src="js/guias.js"></script>
+    <script type="text/javascript" src="js/revisionapi.js"></script>
+    <script type="text/javascript" src="js/recordapi.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+    
   </body>
 </html>
