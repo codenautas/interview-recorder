@@ -1,6 +1,7 @@
 var revisionApi = {
   playTime: 0,
   mediaStartDate: 0,
+  dirty: false,
   mediaDuration: 0,
   entrevista: null,
   colorTagPasado: '#84EC61',
@@ -22,6 +23,7 @@ var revisionApi = {
     revisionApi.audio = null;
     revisionApi.entrevista = null;
     revisionApi.isPlaying = false;
+	revisionApi.dirty = false;
     revisionApi.currentTime.text("00:00");
   },
   initialize: function() {},
@@ -47,6 +49,11 @@ var revisionApi = {
     });
   },
   seek: function(ms) {
+    if(!revisionApi.isPlaying) {
+      revisionApi.play();
+      revisionApi.pausa();
+      revisionApi.currentTime.text(clockFormat(ms / 1000));
+    }
     $('button.tag').each(function(i,e){
       if(ms > $(e).data('miliseconds')) {
         $(e).css('background-color',revisionApi.colorTagPasado);
@@ -71,6 +78,7 @@ var revisionApi = {
       .click(function(e){
         var d = new Date(revisionApi.entrevista.start);
         d.setSeconds(d.getSeconds() + revisionApi.playTime);
+		revisionApi.dirty = true;
         revisionApi.entrevista.tags.push({ref: ref, time: d});
 		$(this).parent().append(revisionApi.createSeekButton(d));
       });
@@ -79,10 +87,13 @@ var revisionApi = {
   onSuccess: function(){
     if(revisionApi.interval) {
       clearInterval(revisionApi.interval);
-      revisionApi.currentTime.text("00:00");
-      revisionApi.interval = null;
-      revisionApi.isPlaying = false;
-    }
+    }    
+	revisionApi.currentTime.text("00:00");
+    revisionApi.interval = null;
+    revisionApi.isPlaying = false;
+    // volver los botones al color original
+    $('button.tag').css('background-color', revisionApi.colorTagPendiente);
+    
     console.log('media stop/played/rec success');
   },
   load: function(entrevistaId) {
@@ -132,6 +143,23 @@ var revisionApi = {
       default: console.log('unknown status');
     }
   },
+  stop: function() {
+    revisionApi.audio.stop();
+  },
+  volver10: function() {
+    var backInTime = revisionApi.playTime - 10;
+    if(backInTime < 0) {
+      backInTime = 0;
+    }
+    console.log('back in time by 10: ' + backInTime);
+    //actualizamos el reloj a mano, por las dudas que
+    //el archivo este en pausa (en pausa no corre
+    //el update porque no esta corriendo el interval)
+    revisionApi.currentTime.text(clockFormat(backInTime));
+
+    //milisegundos, remember?
+    revisionApi.seek(backInTime * 1000);
+  },  
   onError: function(err) {
     console.log('Error');
     console.log(err);

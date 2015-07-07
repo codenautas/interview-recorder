@@ -115,6 +115,12 @@ $('#interview').on('pagecreate', function(){
       recordApi.record();
     }
   });
+  $('a[href="#home"]', '#interview').on('click',function(evt){
+    if(recordApi.isRecording) {
+      evt.preventDefault(); //prevenimos el efecto por default
+      recordApi.stop();
+    }
+  });
 });
 $('#interview').on('pageshow', function(e, pages){
   // console.log(e);
@@ -146,6 +152,45 @@ $('#revision').on('pagecreate', function(){
   $('#pausa').click(function(e){
     e.preventDefault();
     revisionApi.pausa();
+  });
+  $('#stop').on('click', function(e){
+    e.preventDefault();
+    revisionApi.stop();
+  });
+  $('#backTen').click(function(e){
+    e.preventDefault();
+    revisionApi.volver10();
+  });
+  
+  $('a[href="#home"]', '#revision').on('click', function(evt) {
+    evt.preventDefault(); // cancelar evento
+    $.mobile.loading('show');
+    if(revisionApi.isPlaying) {
+      revisionApi.pausa();
+    }
+    if(revisionApi.dirty) {
+      // codigo si hubo cambios
+      var r = confirm('Hay cambios sin guardar en la entrevista, desea guardarlos?');
+      if(r) {
+        // el usuario quiere guardar los cambios
+          entrevistas.guardarEntrevistas(function(){
+            revisionApi.reset(); // <-- reset, ya que estamos
+            $.mobile.navigate('#home'); // <-- vamos a #home
+            $.mobile.loading('hide'); // <-- fuera el spinner
+          });
+		}else{
+        // el usuario quiere DESCARTAR los cambios
+		   entrevistas.initialize(); // <-- reinit
+           revisionApi.reset();
+           $.mobile.navigate('#home');
+           $.mobile.loading('hide');
+      }
+    }else{
+      // codigo si NO hubo cambios
+      revisionApi.reset(); // <-- reset, ya que estamos
+      $.mobile.navigate('#home'); // <-- vamos a #home
+      $.mobile.loading('hide'); // <-- fuera el spinner    
+	  }
   });
 
   //inicializacion de indicadores de tiempo
