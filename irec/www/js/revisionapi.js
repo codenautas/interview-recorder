@@ -39,16 +39,6 @@ var revisionApi = {
    stop: function() {
     revisionApi.audio.stop();
   },
-  /*stop: function(){
-    if(!revisionApi.isPlaying){
-        return;
-    }
-    clearInterval(revisionApi.interval);
-    revisionApi.interval = null;
-    revisionApi.isPlaying = false;
-    revisionApi.audio.stop();
-    $('#currentTime').text("00:00");
-  },*/
   onUpdate: function() {
     revisionApi.audio.getCurrentPosition(function(t){
       revisionApi.playTime = t;
@@ -83,9 +73,6 @@ var revisionApi = {
     revisionApi.interval = setInterval(revisionApi.onUpdate,500);
     revisionApi.isPlaying = true;
     revisionApi.audio.play();
-    $('button.tag').each(function(i,e){
-        $(e).css('background-color',revisionApi.colorTagPendiente);
-      });
   },
   
   createTagButton: function(ref) {
