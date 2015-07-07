@@ -155,7 +155,17 @@ $('#revision').on('pagecreate', function(){
     e.preventDefault();
     revisionApi.pausa();
   });
+  $('a[href="#home"]', '#revision').on('click', function(evt) {
+    evt.preventDefault(); // cancelar evento
 
+    if(revisionApi.isPlaying) {
+      revisionApi.pausa(); // <-- luego cambiaremos por stop
+      revisionApi.reset();
+    }
+
+    //ir a #home
+    $.mobile.navigate('#home');
+  });
   //inicializacion de indicadores de tiempo
   revisionApi.currentTime = $('#currentTime').text("00:00");
 });
