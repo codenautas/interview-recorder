@@ -152,7 +152,6 @@ $('#revision').on('pagecreate', function(){
 
     if(revisionApi.isPlaying) {
       revisionApi.stop();
-      revisionApi.reset();
     }
     if(revisionApi.dirty) {
       // codigo si hubo cambios
@@ -194,9 +193,9 @@ $('#revision').on('pagecreate', function(){
   });
   
   $('#backTen').click(function(e){
-      e.preventDefault();
-      revisionApi.backTen();
-  })
+    e.preventDefault();
+    revisionApi.volver10();
+  });
   //inicializacion de indicadores de tiempo
   revisionApi.currentTime = $('#currentTime').text("00:00");
 });
