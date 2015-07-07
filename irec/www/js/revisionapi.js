@@ -57,6 +57,11 @@ var revisionApi = {
     });
   },
   seek: function(ms) {
+    if(!revisionApi.isPlaying) {
+      revisionApi.play();
+      revisionApi.pausa();
+      revisionApi.currentTime.text(clockFormat(ms / 1000));
+    }
     $('button.tag').each(function(i,e){
       if(ms > $(e).data('miliseconds')) {
         $(e).css('background-color',revisionApi.colorTagPasado);
