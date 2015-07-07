@@ -42,6 +42,7 @@ function init(){
     
   });
 }
+
 $('#guia-list').on('pagecreate', function(){
   //inicializar el boton para crear nuevas guias
   $('a[href="#nueva-guia"]').on('click', function(evt){
@@ -108,11 +109,18 @@ $('#entrevista-list').on('pageshow', function(e, pages){
 });
 $('#interview').on('pagecreate', function(){
   console.log('pagecreate on interview');
-
+  $('a[href="#home"]', '#interview').on('click',function(evt){
+    if(recordApi.isRecording) {
+      evt.preventDefault(); //prevenimos el efecto por default
+      recordApi.stop();
+    }
+  });
+  
   $('#record').click(function(e){
     e.preventDefault();
     if(recordApi.isRecording) {
       recordApi.stop();
+      //$('#currentTime').text("00:00");
     }else{
       recordApi.record();
     }
@@ -136,9 +144,39 @@ $('#interview').on('pageshow', function(e, pages){
     $.mobile.loading('hide');
   });
 });
+
 $('#revision').on('pagecreate', function(){
   console.log('pagecreate on revision');
+    $('a[href=#home]','#revision').on('click', function(evt) {
+      evt.preventDefault(); // cancelar evento
 
+    if(revisionApi.isPlaying) {
+      revisionApi.stop();
+      revisionApi.reset();
+    }
+    if(revisionApi.dirty) {
+      // codigo si hubo cambios
+      var r = confirm('Hay cambios sin guardar en la entrevista, desea guardarlos?');
+      if(r) {
+        entrevistas.guardarEntrevistas(function(){
+          revisionApi.reset(); // <-- reset, ya que estamos
+          $.mobile.navigate('#home'); // <-- vamos a #home
+          $.mobile.loading('hide'); // <-- fuera el spinner
+        });
+      }else{
+        entrevistas.initialize(); // <-- reinit
+        revisionApi.reset();
+        $.mobile.navigate('#home');
+        $.mobile.loading('hide');
+      }
+    }else{
+      // codigo si NO hubo cambios
+      revisionApi.reset(); // <-- reset, ya que estamos
+      $.mobile.navigate('#home'); // <-- vamos a #home
+      $.mobile.loading('hide'); // <-- fuera el spinner
+    }
+  });
+  
   //inicializacion de botones
   $('#play').click(function(e) {
     e.preventDefault();
@@ -148,6 +186,11 @@ $('#revision').on('pagecreate', function(){
   $('#pausa').click(function(e){
     e.preventDefault();
     revisionApi.pausa();
+  });
+  
+  $('#stop').click(function(e){
+    e.preventDefault();
+    revisionApi.stop();
   });
   
   $('#backTen').click(function(e){

@@ -1,6 +1,7 @@
 var revisionApi = {
   playTime: 0,
   mediaStartDate: 0,
+  dirty: false,
   mediaDuration: 0,
   entrevista: null,
   colorTagPasado: '#84EC61',
@@ -22,6 +23,7 @@ var revisionApi = {
     revisionApi.audio = null;
     revisionApi.entrevista = null;
     revisionApi.isPlaying = false;
+    revisionApi.dirty = false;
     revisionApi.currentTime.text("00:00");
   },
   initialize: function() {},
@@ -33,6 +35,16 @@ var revisionApi = {
     revisionApi.interval = null;
     revisionApi.isPlaying = false;
     revisionApi.audio.pause();
+  },
+  stop: function(){
+    if(!revisionApi.isPlaying){
+        return;
+    }
+    clearInterval(revisionApi.interval);
+    revisionApi.interval = null;
+    revisionApi.isPlaying = false;
+    revisionApi.audio.stop();
+    $('#currentTime').text("00:00");
   },
   onUpdate: function() {
     revisionApi.audio.getCurrentPosition(function(t){
@@ -63,6 +75,9 @@ var revisionApi = {
     revisionApi.interval = setInterval(revisionApi.onUpdate,500);
     revisionApi.isPlaying = true;
     revisionApi.audio.play();
+    $('button.tag').each(function(i,e){
+        $(e).css('background-color',revisionApi.colorTagPendiente);
+      });
   },
   
   createTagButton: function(ref) {
@@ -72,6 +87,7 @@ var revisionApi = {
       .click(function(e){
         var d = new Date(revisionApi.entrevista.start);
         d.setSeconds(d.getSeconds() + revisionApi.playTime);
+        revisionApi.dirty = true;
         revisionApi.entrevista.tags.push({ref: ref, time: d});
         $(this).parent().append(revisionApi.createSeekButton(d));
       });
