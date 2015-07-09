@@ -46,11 +46,11 @@ function init(){
     entrevistas.initialize();
 
     recordApi.initialize();
-
+    navigator && navigator.splashscreen && navigator.splashscreen.hide();
   });
 }
 
-
+/*
 $('#home').on('pagecreate', function(){
   $('#limpiarHuerfanos').on('click', function(evt){
     evt.preventDefault();
@@ -327,7 +327,7 @@ $('#nueva-guia').on('pageshow', function(e, pages){
   $('#preguntas').listview('refresh');
 });
 
-
+*/
 
 
 
