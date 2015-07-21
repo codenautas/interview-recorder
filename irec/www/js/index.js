@@ -35,6 +35,7 @@ function init(){
     return false;
   }, false);
 
+
   fileApi.initialize(function(err, apiRef){
     if(err) {
       console.log('file api error');
@@ -46,11 +47,18 @@ function init(){
     entrevistas.initialize();
 
     recordApi.initialize();
+
+    document.addEventListener('pause', function(){
+      recordApi.stop();
+      revisionApi.stop();
+    });
+
+
     navigator && navigator.splashscreen && navigator.splashscreen.hide();
   });
 }
 
-/*
+
 $('#home').on('pagecreate', function(){
   $('#limpiarHuerfanos').on('click', function(evt){
     evt.preventDefault();
@@ -327,7 +335,7 @@ $('#nueva-guia').on('pageshow', function(e, pages){
   $('#preguntas').listview('refresh');
 });
 
-*/
+
 
 
 
