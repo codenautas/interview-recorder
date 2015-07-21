@@ -37,6 +37,7 @@ var recordApi = {
         stop: null,
         tags: []
       };
+      recordApi.clock.text("00:00");
       recordApi.recordFile = fileEntry.nativeURL;
       callback && callback(null, fileEntry);
     }
@@ -72,7 +73,9 @@ var recordApi = {
     recordApi.media.startRecord();
   },
   stop: function(){
-    recordApi.media.stopRecord();
+    if(recordApi.isRecording) {
+      recordApi.media.stopRecord();
+    }
   },
   onStop: function(){
     console.log('recordApi.onStop');
