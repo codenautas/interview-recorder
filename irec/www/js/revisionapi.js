@@ -99,10 +99,9 @@ var revisionApi = {
     return button;
   },
   stop: function() {
-    // if(!revisionApi.isPlaying) {
-    //   return;
-    // }
-    revisionApi.audio.stop();
+    if(revisionApi.isPlaying) {
+      revisionApi.audio.stop();
+    }
   },
   onSuccess: function(){
     if(revisionApi.interval) {
