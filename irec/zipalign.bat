@@ -1,0 +1,1 @@
+"C:\Program Files (x86)\Android\android-sdk\build-tools\22.0.1\zipalign.exe" %*
