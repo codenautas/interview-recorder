@@ -37,5 +37,8 @@ var fileApi = {
       callback && callback(err, null);
     }
     fileApi.dir.getDirectory(dir, {create:true}, onDir, onError);
+  },
+  readDir: function(directoryEntry, callback) {
+    directoryEntry.createReader().readEntries(callback);
   }
 }

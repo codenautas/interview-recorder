@@ -43,6 +43,33 @@ function init(){
   });
 }
 
+$('#home').on('pagecreate', function(){
+  $('#limpiarHuerfanos').on('click', function(evt){
+
+    // cancelamos el comportamiento del boton
+    evt.preventDefault();
+
+    // mostramos el spinner, por si demora mucho
+    $.mobile.loading('show');
+
+    // y llamamos a nuestro metodo en entrevistas
+    entrevistas.encontrarArchivosHuerfanos(function(archivos){
+      // contamos cuantos volvieron
+      var cantidad = archivos.length;
+
+      // luego iteramos por el resultado
+      $.each(archivos, function(i,e){
+        // y como sabemos que son FileEntries
+        // ejecutamos .remove() en cada uno
+        e.remove();
+      });
+      // mostramos un mensaje y escondemos el spinner
+      alert('Se eliminaron '+cantidad+' archivos huerfanos');
+      $.mobile.loading('hide');
+    });
+  });
+});
+
 $('#guia-list').on('pagecreate', function(){
   //inicializar el boton para crear nuevas guias
   $('a[href="#nueva-guia"]').on('click', function(evt){
