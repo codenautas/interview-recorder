@@ -18,7 +18,6 @@ $(document).ready(function(){
 
 $.when(jqmReady,documentReady, deviceReady).then(init);
 
-
 function init(){
   uglyLog('init');
   console.log('init');
@@ -28,24 +27,27 @@ function init(){
   $.mobile.buttonMarkup.hoverDelay = 0;
   $.mobile.pushStateEnabled = false;
   $.mobile.defaultPageTransition = "none";
-
   fileApi.initialize(function(err){
     if(err) { // <-- checkeamos si hay error
       console.log('file api error');
       console.log(err);
       return; // <-- y cortamos la ejecucion de ser asi
     }
-    // aca va mas codigo de inicializacion
-    // sabiendo que fileApi esta inicializado
+    //inicializaciones dependientes de fileApi
+
     guias.initialize();
-    entrevistas.initialize();  
+    entrevistas.initialize();
     recordApi.initialize();
+    revisionApi.initialize();
+
+    document.addEventListener('pause', function(){
+      recordApi.stop();
+      revisionApi.stop();
+    }); 
+
+    navigator && navigator.splashscreen && navigator.splashscreen.hide();    
   });
 }
-
-window.addEventListener('error',function(e){
-    uglyLog(e.message || ''+e).textContent+=e.stack;
-});
 
 $('#guia-list').on('pagecreate', function(){
   //inicializar el boton para crear nuevas guias
@@ -88,7 +90,6 @@ $('#guia-list').on('pageshow', function(e, pages){
   });
   container.listview('refresh');
 });
-
 $('#entrevista-list').on('pageshow', function(e, pages){
   console.log('pageshow en entrevista-list');
   var container = $('#entrevistas', pages.toPage);
@@ -112,28 +113,25 @@ $('#entrevista-list').on('pageshow', function(e, pages){
   });
   container.listview('refresh');
 });
-
 $('#interview').on('pagecreate', function(){
   console.log('pagecreate on interview');
-
-    $('a[href="#home"]', '#interview').on('click', function(evt) {
-      evt.preventDefault(); // cancelar evento
-
-      if(revisionApi.isPlaying) {
-        revisionApi.stop();
-        //revisionApi.reset();
-      }  
-    });
+  $('a[href="#home"]', '#interview').on('click',function(evt){
+    if(recordApi.isRecording) {
+      evt.preventDefault(); //prevenimos el efecto por default
+      recordApi.stop();
+    }
+  });
+  
   $('#record').click(function(e){
     e.preventDefault();
     if(recordApi.isRecording) {
       recordApi.stop();
+      //$('#currentTime').text("00:00");
     }else{
       recordApi.record();
     }
   });
 });
-
 $('#interview').on('pageshow', function(e, pages){
   // console.log(e);
   $.mobile.loading('show');
@@ -155,39 +153,34 @@ $('#interview').on('pageshow', function(e, pages){
 
 $('#revision').on('pagecreate', function(){
   console.log('pagecreate on revision');
-
-    $('a[href="#home"]', '#revision').on('click', function(evt) {
+    $('a[href=#home]','#revision').on('click', function(evt) {
       evt.preventDefault(); // cancelar evento
 
-      if(revisionApi.isPlaying) {
-        revisionApi.pausa();
-        //revisionApi.reset();
-      }
-      if(revisionApi.dirty) {
-        // codigo si hubo cambios
-          var r = confirm('Hay cambios sin guardar en la entrevista, desea guardarlos?');
-          if(r) {
-            // el usuario quiere guardar los cambios
-                entrevistas.guardarEntrevistas(function(){
-                  revisionApi.reset(); // <-- reset, ya que estamos
-                  $.mobile.navigate('#home'); // <-- vamos a #home
-                  $.mobile.loading('hide'); // <-- fuera el spinner  
-                });  
-          }else{
-            // el usuario quiere DESCARTAR los cambios
-                entrevistas.initialize(); // <-- reinit
-                revisionApi.reset();
-                $.mobile.navigate('#home');
-                $.mobile.loading('hide');            
-          }        
-      }else{
-          // codigo si NO hubo cambios
+    if(revisionApi.isPlaying) {
+      revisionApi.stop();
+    }
+    if(revisionApi.dirty) {
+      // codigo si hubo cambios
+      var r = confirm('Hay cambios sin guardar en la entrevista, desea guardarlos?');
+      if(r) {
+        entrevistas.guardarEntrevistas(function(){
           revisionApi.reset(); // <-- reset, ya que estamos
           $.mobile.navigate('#home'); // <-- vamos a #home
-          $.mobile.loading('hide'); // <-- fuera el spinner          
+          $.mobile.loading('hide'); // <-- fuera el spinner
+        });
+      }else{
+        entrevistas.initialize(); // <-- reinit
+        revisionApi.reset();
+        $.mobile.navigate('#home');
+        $.mobile.loading('hide');
       }
-
-});  
+    }else{
+      // codigo si NO hubo cambios
+      revisionApi.reset(); // <-- reset, ya que estamos
+      $.mobile.navigate('#home'); // <-- vamos a #home
+      $.mobile.loading('hide'); // <-- fuera el spinner
+    }
+  });
   
   //inicializacion de botones
   $('#play').click(function(e) {
@@ -199,12 +192,19 @@ $('#revision').on('pagecreate', function(){
     e.preventDefault();
     revisionApi.pausa();
   });
-
+  
+  $('#stop').click(function(e){
+    e.preventDefault();
+    revisionApi.stop();
+  });
+  
+  $('#backTen').click(function(e){
+    e.preventDefault();
+    revisionApi.volver10();
+  });
   //inicializacion de indicadores de tiempo
   revisionApi.currentTime = $('#currentTime').text("00:00");
 });
-
-
 $('#revision').on('pageshow', function(e, pages){
   console.log('pageshow en #revision');
 
@@ -234,7 +234,6 @@ $('#revision').on('pageshow', function(e, pages){
   });
   $.mobile.loading('hide');
 });
-
 $('#nueva-guia').on('pagecreate', function(){
   console.log('pagecreate on nueva-guia');
   $( "#preguntas" ).sortable({
@@ -245,7 +244,6 @@ $('#nueva-guia').on('pagecreate', function(){
   $( "#preguntas" ).on("sortstop", function(event, ui) {
     $('#preguntas').listview('refresh');
   });
-  
   $('#guardar-guia').on('click', function(evt){
     evt.preventDefault();
     if(!$('#titulo-guia').text() || $('li.pregunta').length < 1) {
@@ -287,9 +285,12 @@ $('#nueva-guia').on('pagecreate', function(){
     }
   });
 });
-
 $('#nueva-guia').on('pageshow', function(e, pages){
   $('#preguntaInput').val("");
   $('#preguntas').empty();
   $('#preguntas').listview('refresh');
+});
+window.addEventListener('error',function(e){
+    uglyLog(e.message || ''+e)
+    uglyLog(''+e.stack);
 });
