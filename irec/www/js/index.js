@@ -48,16 +48,24 @@ function init(){
 
     recordApi.initialize();
 
-    document.addEventListener('pause', function(){
-      recordApi.stop();
-      revisionApi.stop();
-    });
 
 
     navigator && navigator.splashscreen && navigator.splashscreen.hide();
   });
 }
 
+// var a = confirm('Quiere seguir reproduciendo cuando se bloquee el telefono?');
+
+// if(a) {
+//   $(document).on('pause', detenerOnBlock);
+// }else{
+//   $(document).off('pause', detenerOnBlock);
+// }
+
+function detenerOnBlock() {
+  recordApi.stop();
+  revisionApi.stop();
+}
 
 $('#home').on('pagecreate', function(){
   $('#limpiarHuerfanos').on('click', function(evt){
