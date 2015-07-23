@@ -28,20 +28,21 @@ var recordApi = {
       callback && callback(err, null);
     }
     var onFile = function(fileEntry) {
+      console.log(fileEntry);
       recordApi.entrevista = {
         id: fileName,
         nombre: $('#titulo-entrevista').text(),
-        audioPath: fileEntry.nativeURL,
+        audioPath: fileEntry.fullPath,
         interview: guiaId,
         start: null,
         stop: null,
         tags: []
       };
       recordApi.clock.text("00:00");
-      recordApi.recordFile = fileEntry.nativeURL;
+      recordApi.recordFile = fileEntry.fullPath;
       callback && callback(null, fileEntry);
     }
-    recordApi.audioDir.getFile(fileName, {create:true}, onFile, onError);
+    recordApi.audioDir.getFile(fileName + '.wav', {create:true}, onFile, onError);
   },
   tildeContestado: function(){
     var mark = $('<div />')
@@ -69,7 +70,7 @@ var recordApi = {
     recordApi.clock.text(clockFormat(recordTime));
   },
   record: function(){
-    recordApi.media = new Media(recordApi.recordFile, recordApi.onStop, recordApi.onError, recordApi.onStatus);
+    recordApi.media = new Media('file://' + recordApi.recordFile, recordApi.onStop, recordApi.onError, recordApi.onStatus);
     recordApi.media.startRecord();
   },
   stop: function(){
