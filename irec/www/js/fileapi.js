@@ -1,7 +1,7 @@
 var fileApi = {
   ready: false,
   initialize: function(callback){
-    var path = cordova.file.externalDataDirectory;
+    var path = cordova.file.documentsDirectory;
     var onResolve = function(directoryEntry) {
       fileApi.dir = directoryEntry;
       fileApi.ready = true;
