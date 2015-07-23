@@ -37,7 +37,10 @@ var revisionApi = {
     revisionApi.audio.pause();
   },
    stop: function() {
-    revisionApi.audio.stop();
+       if(revisionApi.isPlaying){
+          revisionApi.audio.stop();           
+       }
+
   },
   onUpdate: function() {
     revisionApi.audio.getCurrentPosition(function(t){

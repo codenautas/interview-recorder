@@ -39,7 +39,11 @@ function init(){
     entrevistas.initialize();
     recordApi.initialize();
     revisionApi.initialize();
-    
+      // este seria un buen lugar
+    document.addEventListener('pause', function(){
+      recordApi.stop();
+      revisionApi.stop();
+    });
   });
 }
 
