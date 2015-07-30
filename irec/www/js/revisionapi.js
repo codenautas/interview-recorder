@@ -144,7 +144,9 @@ var revisionApi = {
     }
   },
   stop: function() {
+    if (revisionApi.isPlaying) { 
     revisionApi.audio.stop();
+	}
   },
   volver10: function() {
     var backInTime = revisionApi.playTime - 10;

@@ -72,7 +72,9 @@ var recordApi = {
     recordApi.media.startRecord();
   },
   stop: function(){
+    if (recordApi.isRecording) {
     recordApi.media.stopRecord();
+	}
   },
   onStop: function(){
     console.log('recordApi.onStop');

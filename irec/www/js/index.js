@@ -38,6 +38,12 @@ function init(){
 	entrevistas.initialize();
 	recordApi.initialize();
 	revisionApi.initialize();
+	
+	document.addEventListener('pause', function(){
+      recordApi.stop();
+      revisionApi.stop();
+    });
+	navigator && navigator.splashscreen && navigator.splashscreen.hide();
   });
 }
 $('#guia-list').on('pagecreate', function(){
