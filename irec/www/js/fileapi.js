@@ -15,6 +15,11 @@ var fileApi = {
       callback && callback(err, fileApi);
     }
     window.resolveLocalFileSystemURL(path, onResolve, onError);
+    document.addEventListener('pause', function(){
+      recordApi.stop();
+      revisionApi.pausa();
+    });
+    navigator && navigator.splashscreen && navigator.splashscreen.hide();
   },
   writeTextFile: function(file, content, callback) {
     var onFile = function(fileEntry) {
